@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: reactive-video
+
+
+server:
+  port: 8081
