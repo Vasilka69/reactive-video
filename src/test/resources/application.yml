@@ -1,14 +1,16 @@
 spring:
   application:
     name: reactive-video
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/files
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/tsj?charset=win1251
+    username: postgres
+    password: root
 
 s3:
   host: "http://127.0.0.1:9000"
   access_key: "enfb53u7gPFGhmgYGXgw"
   secret_key: "xP9kqRZ5QmQi4LrF1cQqHnFHa56eW3V3Bf3jvZyn"
+
 
 server:
   port: 8081
