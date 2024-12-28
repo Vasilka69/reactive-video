@@ -4,13 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.UUID;
-
 @AllArgsConstructor
 @Data
 public class FileRequestEntity {
     @JsonIgnore
-    private UUID id;
+    private String id;
     private String bucket;
     private String filePath;
 }

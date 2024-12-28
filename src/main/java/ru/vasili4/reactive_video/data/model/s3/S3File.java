@@ -9,7 +9,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 public class S3File {
-    private UUID fileId;
+    private String fileId;
     private String bucket;
     private String filePath;
 

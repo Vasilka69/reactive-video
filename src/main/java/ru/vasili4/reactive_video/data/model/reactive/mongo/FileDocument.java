@@ -7,8 +7,6 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.UUID;
-
 @Getter
 @Setter
 @EqualsAndHashCode
@@ -16,7 +14,7 @@ import java.util.UUID;
 @Document("file")
 public class FileDocument {
     @Id
-    private UUID fileId;
+    private String fileId;
     private String bucket;
     private String filePath;
 }

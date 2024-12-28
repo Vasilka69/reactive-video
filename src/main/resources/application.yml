@@ -4,6 +4,8 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/files
+  main:
+    web-application-type: reactive
 
 s3:
   host: "http://127.0.0.1:9000"
@@ -12,3 +14,7 @@ s3:
 
 server:
   port: 8081
+
+logging:
+  level:
+    root: DEBUG

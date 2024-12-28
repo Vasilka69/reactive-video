@@ -4,8 +4,6 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.UUID;
-
 @Getter
 @Setter
 @EqualsAndHashCode
@@ -22,6 +20,6 @@ public class UserHasFileDocument {
     @EqualsAndHashCode
     public static class UserHasFileDocumentId {
         private String login;
-        private UUID fileId;
+        private String fileId;
     }
 }

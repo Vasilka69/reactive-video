@@ -1,8 +1,6 @@
 package ru.vasili4.reactive_video.service.impl;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,11 +23,5 @@ public class UserServiceImpl implements UserService {
         dto.setPassword(passwordEncoder.encode(dto.getPassword()));
         return userMongoRepository.save(new UserDocument(dto))
                 .map(UserDocument::getLogin);
-    }
-
-    @Override
-    public Mono<SecurityUser> getSecurityUserFromContext() {
-        return ReactiveSecurityContextHolder.getContext()
-                .map(m -> (SecurityUser) m.getAuthentication().getDetails());
     }
 }

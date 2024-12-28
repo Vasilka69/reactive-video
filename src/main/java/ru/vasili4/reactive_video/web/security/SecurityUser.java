@@ -2,7 +2,6 @@ package ru.vasili4.reactive_video.web.security;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.UserDocument;
 

@@ -5,12 +5,13 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.Date;
 
 import static org.springframework.util.StringUtils.hasText;
@@ -28,24 +29,33 @@ public class TokenAuthenticationService {
     private static SecurityUserDetailsManager securityUserDetailsManager;
 
     public TokenAuthenticationService(SecurityUserDetailsManager securityUserDetailsManager) {
-        this.securityUserDetailsManager = securityUserDetailsManager;
+        TokenAuthenticationService.securityUserDetailsManager = securityUserDetailsManager;
     }
 
-    public static void addAuthentication(HttpServletResponse response, String username) {
-        response.addHeader(HEADER_STRING, TOKEN_PREFIX + generateToken(username));
+    public static void addAuthentication(ServerHttpResponse response, String username) {
+        response.getHeaders().set(HEADER_STRING, TOKEN_PREFIX + generateToken(username));
     }
 
-    public static Authentication getAuthentication(HttpServletRequest request) {
+    public static Mono<Authentication> getAuthentication(ServerHttpRequest request) {
         String token = getToken(request);
 
         if (!hasText(token)) {
-            return null;
+            return Mono.empty();
         }
 
         String userName = getUsername(token);
 
-        SecurityUser user = (SecurityUser) securityUserDetailsManager.loadUserByUsername(userName);
-        return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        return securityUserDetailsManager.findByUsername(userName)
+                .cast(SecurityUser.class)
+                .map(securityUser -> new UsernamePasswordAuthenticationToken(securityUser, null, securityUser.getAuthorities()));
+    }
+
+    public static String getToken(ServerHttpRequest request) {
+        String headerValue = request.getHeaders().getFirst(HEADER_STRING);
+        if (headerValue != null)
+            return headerValue.replace(TOKEN_PREFIX, "");
+        else
+            return null;
     }
 
     private static String generateToken(String username) {
@@ -54,13 +64,6 @@ public class TokenAuthenticationService {
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(SignatureAlgorithm.HS512, SECRET)
                 .compact();
-    }
-
-    private static String getToken(HttpServletRequest request) {
-        if (request.getHeader(HEADER_STRING) != null)
-            return request.getHeader(HEADER_STRING).replace(TOKEN_PREFIX, "");
-        else
-            return null;
     }
 
     public static String getUsername(String token) {
