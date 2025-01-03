@@ -13,7 +13,6 @@ import ru.vasili4.reactive_video.data.repository.reactive.FileReactiveRepository
 import ru.vasili4.reactive_video.data.repository.reactive.UserHasFileReactiveRepository;
 import ru.vasili4.reactive_video.data.repository.s3.S3FileRepository;
 import ru.vasili4.reactive_video.service.FileService;
-import ru.vasili4.reactive_video.web.dto.request.FileRequestEntity;
 
 @RequiredArgsConstructor
 @Service
@@ -32,11 +31,11 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Transactional
-    public Mono<String> create(FileRequestEntity dto, String login, Mono<FilePart> filePartMono) {
+    public Mono<String> create(FileDocument fileDocument, String login, Mono<FilePart> filePartMono) {
         return fileReactiveRepository.save(new FileDocument(
-                        dto.getId(),
-                        dto.getBucket(),
-                        dto.getFilePath()
+                        fileDocument.getFileId(),
+                        fileDocument.getBucket(),
+                        fileDocument.getFilePath()
                 ))
                 .flatMap(fileEntity ->
                         filePartMono.flatMap(filePart ->
@@ -61,11 +60,11 @@ public class FileServiceImpl implements FileService {
                 .map(FileDocument::getFileId);
 //    @Override
 //    @Transactional
-//    public Mono<String> create(FileRequestEntity dto, String login, Mono<FilePart> filePart) {
+//    public Mono<String> create(FileRequestEntity fileDocument, String login, Mono<FilePart> filePart) {
 //        return fileMongoRepository.save(new FileDocument(
-//                        dto.getId(),
-//                        dto.getBucket(),
-//                        dto.getFilePath()
+//                        fileDocument.getId(),
+//                        fileDocument.getBucket(),
+//                        fileDocument.getFilePath()
 //                ))
 //                .map(fileEntity -> {
 //                    List<Byte> byteList = new ArrayList<>();
@@ -102,9 +101,9 @@ public class FileServiceImpl implements FileService {
 //                )
 //                .map(FileDocument::getFileId);
 //        return fileMongoRepository.save(new FileDocument(
-//                        dto.getId(),
-//                        dto.getBucket(),
-//                        dto.getFilePath()
+//                        fileDocument.getId(),
+//                        fileDocument.getBucket(),
+//                        fileDocument.getFilePath()
 //                ))
 //                .doOnSuccess(fileEntity -> fileS3Repository.createFile(new S3File(fileEntity), content))
 //                .flatMap(fileEntity -> userHasFileMongoRepository.save(

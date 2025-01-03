@@ -1,5 +1,6 @@
 package ru.vasili4.reactive_video.web.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 
+@Tag(name = "api-video-controller", description = "Видео")
 @RestController
 @RequestMapping("/api/v1/reactive-video")
 public class VideoReactiveController {
