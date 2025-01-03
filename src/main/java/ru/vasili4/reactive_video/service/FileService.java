@@ -11,5 +11,6 @@ public interface FileService {
 
     Mono<FileDocument> getById(String id);
     Mono<String> create(FileRequestEntity file, String login, Mono<FilePart> filePart);
+    Mono<Void> deleteById(String id);
 
 }

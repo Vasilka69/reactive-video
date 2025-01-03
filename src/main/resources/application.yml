@@ -9,8 +9,8 @@ spring:
 
 s3:
   host: "http://127.0.0.1:9000"
-  access_key: "enfb53u7gPFGhmgYGXgw"
-  secret_key: "xP9kqRZ5QmQi4LrF1cQqHnFHa56eW3V3Bf3jvZyn"
+  access_key: "ObqQJsbLKk22VWYMyyQS"
+  secret_key: "gO0ZOI52F0SncUn3EySmsSegxPeRBMckfrpHhy4A"
 
 server:
   port: 8081

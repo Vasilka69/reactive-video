@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)
                 .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec
+                        .pathMatchers(getSwaggerPatterns()).permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/v1/reactive-user/register").permitAll()
                         .anyExchange().authenticated())
                 .securityContextRepository(new DefaultSecurityContextRepository())
@@ -70,4 +71,12 @@ public class SecurityConfig {
         return defaultPermissionEvaluator;
     }
 
+    private String[] getSwaggerPatterns() {
+        return new String[] {
+                "/webjars/**",
+                "/v3/api-docs/**",
+                "/swagger-ui.html",
+                "/swagger-ui/**"
+        };
+    }
 }

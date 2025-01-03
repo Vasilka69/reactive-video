@@ -6,15 +6,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import ru.vasili4.reactive_video.data.repository.reactive.mongo.UserHasFileMongoRepository;
-import ru.vasili4.reactive_video.data.repository.reactive.mongo.UserMongoRepository;
+import ru.vasili4.reactive_video.data.repository.reactive.UserHasFileReactiveRepository;
+import ru.vasili4.reactive_video.data.repository.reactive.UserReactiveRepository;
 
 @Component
 @RequiredArgsConstructor
 public class SecurityUserDetailsManager implements ReactiveUserDetailsService {
 
-    private final UserMongoRepository userMongoRepository;
-    private final UserHasFileMongoRepository userHasFileMongoRepository;
+    private final UserReactiveRepository userReactiveRepository;
+    private final UserHasFileReactiveRepository userHasFileReactiveRepository;
 
 
     @Override
@@ -23,9 +23,9 @@ public class SecurityUserDetailsManager implements ReactiveUserDetailsService {
             return Mono.empty();
 
         return Mono.zip(
-                        userMongoRepository.findById(login)
+                        userReactiveRepository.findById(login)
                                 .switchIfEmpty(Mono.error(new UsernameNotFoundException("Пользователь не найден"))),
-                        userHasFileMongoRepository.findByIdLogin(login)
+                        userHasFileReactiveRepository.findByIdLogin(login)
                                 .map(userHasFile -> new SecurityPermission(userHasFile.getId().getFileId()))
                                 .collectList()
                 )

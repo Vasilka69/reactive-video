@@ -6,9 +6,9 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.3</version>
+<!--		<version>3.2.3</version>-->
 <!--		<version>3.3.2</version>-->
-<!--		<version>3.3.6</version>-->
+		<version>3.3.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -22,6 +22,8 @@
 		<java.version>17</java.version>
 		<jjwt.version>0.12.6</jjwt.version>
 		<postgresql.version>42.2.5</postgresql.version>
+		<minio.version>8.5.2</minio.version>
+		<springdoc-openapi-starter-webflux-ui.version>2.6.0</springdoc-openapi-starter-webflux-ui.version>
 	</properties>
 
 	<dependencies>
@@ -75,7 +77,14 @@
 		<dependency>
 			<groupId>io.minio</groupId>
 			<artifactId>minio</artifactId>
-			<version>8.5.2</version>
+			<version>${minio.version}</version>
+		</dependency>
+
+		<!-- swagger -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+			<version>${springdoc-openapi-starter-webflux-ui.version}</version>
 		</dependency>
 
 		<!-- utils -->
