@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.service.UserService;
+import ru.vasili4.reactive_video.service.validators.UserValidator;
 import ru.vasili4.reactive_video.web.dto.request.UserRequestDto;
 
 @Tag(name = "api-user-controller", description = "Пользователи")
@@ -22,10 +23,13 @@ public class UserReactiveController {
 
     private final UserService userService;
 
+    private final UserValidator userValidator;
+
     @Operation(description = "Регистрация пользователя")
     @PostMapping("/register")
     public Mono<ResponseEntity<Void>> register(
             @Parameter(description = "Логин и пароль пользователя", required = true) @RequestBody UserRequestDto user) {
-        return userService.register(user).map(id -> ResponseEntity.status(HttpStatus.OK).build());
+        return userValidator.validateBeforeCreate(user).
+                then(userService.register(user).map(id -> ResponseEntity.status(HttpStatus.OK).build()));
     }
 }

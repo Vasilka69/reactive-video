@@ -20,12 +20,9 @@ public class UserServiceImpl implements UserService {
     private final UserReactiveRepository userReactiveRepository;
     private final PasswordEncoder passwordEncoder;
 
-    private final UserValidator userValidator;
-
 
     @Override
     public Mono<String> register(UserRequestDto dto) {
-        userValidator.validateBeforeCreate(dto);
         return findByLogin(dto.getLogin())
                 .flatMap(userDocument -> {
                     if (userDocument != null)

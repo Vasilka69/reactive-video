@@ -37,30 +37,30 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public Mono<String> create(FileDocument fileDocument, Mono<FilePart> filePartMono, String login) {
-        fileValidator.validateBeforeCreate(fileDocument);
-        return fileReactiveRepository.save(fileDocument)
-                .flatMap(fileEntity ->
-                        filePartMono.flatMap(filePart ->
-                                DataBufferUtils.join(filePart.content())
-                                        .map(dataBuffer -> {
-                                            byte[] byteContent = new byte[dataBuffer.readableByteCount()];
-                                            dataBuffer.read(byteContent);
-                                            DataBufferUtils.release(dataBuffer);
-                                            s3FileRepository.createFile(new S3File(fileEntity), byteContent);
-                                            return fileEntity;
-                                        })
+        return fileValidator.validateBeforeCreate(fileDocument)
+                .then(fileReactiveRepository.save(fileDocument)
+                        .flatMap(fileEntity ->
+                                filePartMono.flatMap(filePart ->
+                                        DataBufferUtils.join(filePart.content())
+                                                .map(dataBuffer -> {
+                                                    byte[] byteContent = new byte[dataBuffer.readableByteCount()];
+                                                    dataBuffer.read(byteContent);
+                                                    DataBufferUtils.release(dataBuffer);
+                                                    s3FileRepository.createFile(new S3File(fileEntity), byteContent);
+                                                    return fileEntity;
+                                                })
+                                )
                         )
-                )
-                .flatMap(fileEntity -> userHasFileReactiveRepository.save(
-                                new UserHasFileDocument(
-                                        new UserHasFileDocument.UserHasFileDocumentId(
-                                                login,
-                                                fileEntity.getFileId())
-                                ))
-                        .thenReturn(fileEntity)
-                )
-                .doOnSuccess(fileEntity -> log.info("Файл успешно создан: {}", fileEntity))
-                .map(FileDocument::getFileId);
+                        .flatMap(fileEntity -> userHasFileReactiveRepository.save(
+                                        new UserHasFileDocument(
+                                                new UserHasFileDocument.UserHasFileDocumentId(
+                                                        login,
+                                                        fileEntity.getFileId())
+                                        ))
+                                .thenReturn(fileEntity)
+                        )
+                        .doOnSuccess(fileEntity -> log.info("Файл успешно создан: {}", fileEntity))
+                        .map(FileDocument::getFileId));
     }
 
     @Override
