@@ -17,10 +17,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
-import ru.vasili4.reactive_video.web.security.filters.AuthenticationFilter;
-import ru.vasili4.reactive_video.web.security.DefaultPermissionEvaluator;
-import ru.vasili4.reactive_video.web.security.DefaultSecurityContextRepository;
-import ru.vasili4.reactive_video.web.security.filters.JWTLoginFilter;
+import org.springframework.security.web.server.context.ServerSecurityContextRepository;
+import ru.vasili4.reactive_video.security.filters.AuthenticationFilter;
+import ru.vasili4.reactive_video.security.DefaultPermissionEvaluator;
+import ru.vasili4.reactive_video.security.DefaultSecurityContextRepository;
+import ru.vasili4.reactive_video.security.filters.JWTLoginFilter;
 
 @RequiredArgsConstructor
 @EnableWebFluxSecurity
@@ -32,6 +33,7 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http,
                                                       ServerCodecConfigurer serverCodecConfigurer,
+                                                      ServerSecurityContextRepository serverSecurityContextRepository,
                                                       ReactiveAuthenticationManager authenticationManager) {
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
@@ -43,9 +45,10 @@ public class SecurityConfig {
                         .pathMatchers(getSwaggerPatterns()).permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/v1/reactive-user/register").permitAll()
                         .anyExchange().authenticated())
-                .securityContextRepository(new DefaultSecurityContextRepository())
+                .securityContextRepository(serverSecurityContextRepository)
+//                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .addFilterAt(new JWTLoginFilter(HttpMethod.POST, "/login", authenticationManager, serverCodecConfigurer), SecurityWebFiltersOrder.AUTHENTICATION)
-                .addFilterAt(new AuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION);
+                .addFilterAt(new AuthenticationFilter(serverSecurityContextRepository), SecurityWebFiltersOrder.AUTHENTICATION);
 
         return http.build();
     }
@@ -61,6 +64,11 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public ServerSecurityContextRepository serverSecurityContextRepository() {
+        return new DefaultSecurityContextRepository();
     }
 
     @Bean

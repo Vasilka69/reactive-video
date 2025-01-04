@@ -1,4 +1,4 @@
-package ru.vasili4.reactive_video.web.security;
+package ru.vasili4.reactive_video.security;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

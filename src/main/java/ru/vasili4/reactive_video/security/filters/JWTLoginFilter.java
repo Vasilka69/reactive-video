@@ -1,4 +1,4 @@
-package ru.vasili4.reactive_video.web.security.filters;
+package ru.vasili4.reactive_video.security.filters;
 
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -7,7 +7,7 @@ import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import reactor.core.publisher.Mono;
-import ru.vasili4.reactive_video.web.security.ServerBodyAuthenticationConverter;
+import ru.vasili4.reactive_video.security.ServerBodyAuthenticationConverter;
 
 public class JWTLoginFilter extends AuthenticationWebFilter {
 

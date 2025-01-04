@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.FileDocument;
 import ru.vasili4.reactive_video.service.FileService;
@@ -26,6 +27,13 @@ import java.util.UUID;
 public class FileReactiveController {
 
     private final FileService fileService;
+
+    @Operation(description = "Получение списка метаданных файлов пользователя")
+    @GetMapping
+    public Flux<FileMetadataResponseEntity> getAll(Principal principal) {
+        return fileService.getByUserLogin(principal.getName())
+                .map(FileMetadataResponseEntity::new);
+    }
 
     @Operation(description = "Получение метаданных файла по ID")
     @GetMapping("/{id}")

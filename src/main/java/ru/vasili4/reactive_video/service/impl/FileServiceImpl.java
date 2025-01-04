@@ -5,6 +5,7 @@ import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.FileDocument;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.UserHasFileDocument;
@@ -128,5 +129,11 @@ public class FileServiceImpl implements FileService {
                 .doOnSuccess(fileDocument -> userHasFileReactiveRepository.findByIdFileId(fileDocument.getFileId()).subscribe())
                 .then();
 
+    }
+
+    @Override
+    public Flux<FileDocument> getByUserLogin(String login) {
+        return userHasFileReactiveRepository.findByIdLogin(login)
+                .flatMap(userHasFileDocument -> fileReactiveRepository.findById(userHasFileDocument.getId().getFileId()));
     }
 }

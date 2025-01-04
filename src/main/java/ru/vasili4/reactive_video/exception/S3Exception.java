@@ -1,4 +1,4 @@
-package ru.vasili4.reactive_video.web.exception;
+package ru.vasili4.reactive_video.exception;
 
 public class S3Exception extends BaseReactiveVideoException {
 
@@ -6,4 +6,7 @@ public class S3Exception extends BaseReactiveVideoException {
         super(cause);
     }
 
+    public S3Exception(String message) {
+        super(message);
+    }
 }

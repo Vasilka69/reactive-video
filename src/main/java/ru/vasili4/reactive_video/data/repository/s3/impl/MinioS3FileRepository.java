@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.vasili4.reactive_video.data.model.s3.S3File;
 import ru.vasili4.reactive_video.data.repository.s3.S3FileRepository;
-import ru.vasili4.reactive_video.web.exception.S3Exception;
+import ru.vasili4.reactive_video.exception.S3Exception;
 
 import java.io.ByteArrayInputStream;
 
@@ -24,7 +24,7 @@ public class MinioS3FileRepository implements S3FileRepository {
                             .build()
             );
         } catch (Exception e) {
-            throw new S3Exception(e);
+            throw new S3Exception(String.format("Ошибка взаимодействия с S3 хранилищем: %s", e.getMessage()));
         }
     }
 
@@ -39,7 +39,7 @@ public class MinioS3FileRepository implements S3FileRepository {
                     .stream(new ByteArrayInputStream(content), -1, 1024 * 1024 * 5)
                     .build());
         } catch (Exception e) {
-            throw new S3Exception(e);
+            throw new S3Exception(String.format("Ошибка взаимодействия с S3 хранилищем: %s", e.getMessage()));
         }
     }
 
@@ -51,7 +51,7 @@ public class MinioS3FileRepository implements S3FileRepository {
                     .object(fileEntity.getFilePath())
                     .build());
         } catch (Exception e) {
-            throw new S3Exception(e);
+            throw new S3Exception(String.format("Ошибка взаимодействия с S3 хранилищем: %s", e.getMessage()));
         }
     }
 }

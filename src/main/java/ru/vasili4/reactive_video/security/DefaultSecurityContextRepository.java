@@ -1,4 +1,4 @@
-package ru.vasili4.reactive_video.web.security;
+package ru.vasili4.reactive_video.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +29,24 @@ public class DefaultSecurityContextRepository implements ServerSecurityContextRe
 
     @Override
     public Mono<SecurityContext> load(ServerWebExchange exchange) {
-        return Mono.justOrEmpty(storage.get(exchange));
+        if (storage.get(exchange) == null)
+            TokenAuthenticationService.getAuthentication(
+                            exchange.getRequest()
+                    )
+                    .map(SecurityContextImpl::new)
+                    .subscribe();
+//        if (storage.get(exchange) == null)
+//            storage.put(exchange, new SecurityContextImpl());
+//
+        return Mono.just(storage.get(exchange));
+//        return Mono.justOrEmpty(storage.get(exchange));
+//        return Mono.just(storage.getOrDefault(exchange, new SecurityContextImpl()));
+//        return Mono.just(storage.getOrDefault(exchange,
+//                TokenAuthenticationService.getAuthentication(
+//                                exchange.getRequest()
+//                        )
+//                        .map(authentication -> new SecurityContextImpl(authentication))
+//                        .subscribe()));
     }
 
 //    @Override

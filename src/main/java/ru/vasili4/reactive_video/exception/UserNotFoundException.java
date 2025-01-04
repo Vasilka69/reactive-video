@@ -1,4 +1,4 @@
-package ru.vasili4.reactive_video.web.exception;
+package ru.vasili4.reactive_video.exception;
 
 /**
  *

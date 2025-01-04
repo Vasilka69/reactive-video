@@ -1,10 +1,10 @@
-package ru.vasili4.reactive_video.web.security;
+package ru.vasili4.reactive_video.security;
 
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import ru.vasili4.reactive_video.web.exception.UserNotFoundException;
+import ru.vasili4.reactive_video.exception.UserNotFoundException;
 
 import java.io.Serializable;
 
