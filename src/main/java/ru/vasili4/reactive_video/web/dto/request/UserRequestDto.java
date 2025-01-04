@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode
 @Schema(description = "Логин и пароль пользователя")
-public class UserRequestEntity {
+public class UserRequestDto {
     @Schema(description = "Логин пользователя")
     private String login;
     @Schema(description = "Пароль пользователя")

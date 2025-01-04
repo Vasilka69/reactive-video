@@ -1,4 +1,4 @@
-package ru.vasili4.reactive_video.security;
+package ru.vasili4.reactive_video.security.converters;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ResolvableType;
@@ -11,14 +11,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import ru.vasili4.reactive_video.web.dto.request.UserRequestEntity;
+import ru.vasili4.reactive_video.security.TokenAuthenticationService;
+import ru.vasili4.reactive_video.web.dto.request.UserRequestDto;
 
 import java.util.Collections;
 
 @RequiredArgsConstructor
-public class ServerBodyAuthenticationConverter implements ServerAuthenticationConverter {
+public class BodyAuthenticationConverter implements ServerAuthenticationConverter {
 
-    private final ResolvableType usernamePasswordType = ResolvableType.forClass(UserRequestEntity.class);
+    private final ResolvableType usernamePasswordType = ResolvableType.forClass(UserRequestDto.class);
 
     private final ServerCodecConfigurer serverCodecConfigurer;
 
@@ -36,7 +37,7 @@ public class ServerBodyAuthenticationConverter implements ServerAuthenticationCo
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("No JSON reader found"))
                     .readMono(this.usernamePasswordType, request, Collections.emptyMap())
-                    .cast(UserRequestEntity.class)
+                    .cast(UserRequestDto.class)
                     .map(o -> new UsernamePasswordAuthenticationToken(o.getLogin(), o.getPassword()))
                     .doOnSuccess(usernamePasswordAuthenticationTokenSignal -> TokenAuthenticationService.addAuthentication(response, usernamePasswordAuthenticationTokenSignal.getName()))
                     .cast(Authentication.class);

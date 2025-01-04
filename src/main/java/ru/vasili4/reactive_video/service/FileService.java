@@ -8,7 +8,7 @@ import ru.vasili4.reactive_video.data.model.reactive.mongo.FileDocument;
 public interface FileService {
 
     Mono<FileDocument> getById(String id);
-    Mono<String> create(FileDocument file, String login, Mono<FilePart> filePart);
+    Mono<String> create(FileDocument file, Mono<FilePart> filePart, String login);
     Mono<Void> deleteById(String id);
     Flux<FileDocument> getByUserLogin(String login);
 }

@@ -3,8 +3,8 @@ package ru.vasili4.reactive_video.security;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,24 +16,18 @@ import java.util.Date;
 
 import static org.springframework.util.StringUtils.hasText;
 
-
+@Slf4j
 @Service
 public class TokenAuthenticationService {
     private static final String SECRET = "Secret123Secret123Secret123Secret123Secret123Secret123Secret123Secret123Secret123Secret123";
     private static final long EXPIRATION_TIME = 864_000_000;
     private static final String TOKEN_PREFIX = "Bearer ";
-    private static final String HEADER_STRING = "Authorization";
-
-    private static Logger LOG = LoggerFactory.getLogger(TokenAuthenticationService.class);
+    private static final String HEADER_STRING = HttpHeaders.AUTHORIZATION;
 
     private static SecurityUserDetailsManager securityUserDetailsManager;
 
     public TokenAuthenticationService(SecurityUserDetailsManager securityUserDetailsManager) {
         TokenAuthenticationService.securityUserDetailsManager = securityUserDetailsManager;
-    }
-
-    public static void addAuthentication(ServerHttpResponse response, String username) {
-        response.getHeaders().set(HEADER_STRING, TOKEN_PREFIX + generateToken(username));
     }
 
     public static Mono<Authentication> getAuthentication(ServerHttpRequest request) {
@@ -48,6 +42,10 @@ public class TokenAuthenticationService {
         return securityUserDetailsManager.findByUsername(userName)
                 .cast(SecurityUser.class)
                 .map(securityUser -> new UsernamePasswordAuthenticationToken(securityUser, null, securityUser.getAuthorities()));
+    }
+
+    public static void addAuthentication(ServerHttpResponse response, String username) {
+        response.getHeaders().set(HEADER_STRING, TOKEN_PREFIX + generateToken(username));
     }
 
     public static String getToken(ServerHttpRequest request) {
@@ -75,7 +73,7 @@ public class TokenAuthenticationService {
                     .getBody()
                     .getSubject() : null;
         } catch (JwtException e) {
-            LOG.info("Ошибка обработки токена: {}", token);
+            log.info("Ошибка обработки токена: {}", token);
             return null;
         }
     }

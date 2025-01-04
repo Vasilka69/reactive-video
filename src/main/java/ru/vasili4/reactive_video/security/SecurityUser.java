@@ -2,6 +2,7 @@ package ru.vasili4.reactive_video.security;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.UserDocument;
 
@@ -12,7 +13,7 @@ import java.util.Collection;
 public class SecurityUser extends User {
 
     private UserDocument user;
-    public SecurityUser(UserDocument user, String username, String password, Collection<? extends SecurityPermission> authorities) {
+    public SecurityUser(UserDocument user, String username, String password, Collection<? extends SimpleGrantedAuthority> authorities) {
         super(username, password, authorities);
         this.user = user;
     }

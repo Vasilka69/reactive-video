@@ -14,7 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.FileDocument;
 import ru.vasili4.reactive_video.service.FileService;
-import ru.vasili4.reactive_video.web.dto.response.FileMetadataResponseEntity;
+import ru.vasili4.reactive_video.web.dto.response.FileMetadataResponseDto;
 
 import java.nio.file.Paths;
 import java.security.Principal;
@@ -30,18 +30,18 @@ public class FileReactiveController {
 
     @Operation(description = "Получение списка метаданных файлов пользователя")
     @GetMapping
-    public Flux<FileMetadataResponseEntity> getAll(Principal principal) {
+    public Flux<FileMetadataResponseDto> getAll(Principal principal) {
         return fileService.getByUserLogin(principal.getName())
-                .map(FileMetadataResponseEntity::new);
+                .map(FileMetadataResponseDto::new);
     }
 
     @Operation(description = "Получение метаданных файла по ID")
     @GetMapping("/{id}")
     @PreAuthorize("hasPermission('file', #id)")
-    public Mono<ResponseEntity<FileMetadataResponseEntity>> getById(
+    public Mono<ResponseEntity<FileMetadataResponseDto>> getById(
             @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id) {
         return fileService.getById(id)
-                .map(FileMetadataResponseEntity::new)
+                .map(FileMetadataResponseDto::new)
                 .map(ResponseEntity::ok);
     }
 
@@ -59,8 +59,8 @@ public class FileReactiveController {
                                         bucket,
                                         String.format("%s/%s", Paths.get(filePath).toString().replace("\\", "/"), file.filename())
                                 ),
-                                principal.getName(),
-                                filePart))
+                                filePart,
+                                principal.getName()))
                 .map(id -> ResponseEntity.status(HttpStatus.CREATED).body(id));
     }
 
@@ -72,5 +72,4 @@ public class FileReactiveController {
         return fileService.deleteById(id)
                 .then(Mono.just(ResponseEntity.status(HttpStatus.ACCEPTED).build()));
     }
-
 }

@@ -7,9 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class ExceptionResponseEntity {
+public class ExceptionResponseDto {
     private String message;
-    private String error;
-    private int status;
 }
 

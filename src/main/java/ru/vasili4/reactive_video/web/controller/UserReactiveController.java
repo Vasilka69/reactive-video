@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.service.UserService;
-import ru.vasili4.reactive_video.web.dto.request.UserRequestEntity;
+import ru.vasili4.reactive_video.web.dto.request.UserRequestDto;
 
 @Tag(name = "api-user-controller", description = "Пользователи")
 @RequiredArgsConstructor
@@ -25,7 +25,7 @@ public class UserReactiveController {
     @Operation(description = "Регистрация пользователя")
     @PostMapping("/register")
     public Mono<ResponseEntity<Void>> register(
-            @Parameter(description = "Логин и пароль пользователя", required = true) @RequestBody UserRequestEntity user) {
+            @Parameter(description = "Логин и пароль пользователя", required = true) @RequestBody UserRequestDto user) {
         return userService.register(user).map(id -> ResponseEntity.status(HttpStatus.OK).build());
     }
 }

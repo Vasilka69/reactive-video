@@ -6,10 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-<!--		<version>3.2.3</version>-->
-<!--		<version>3.3.2</version>-->
-<!--		<version>3.3.6</version>-->
-		<version>3.1.5</version>
+		<version>3.3.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -39,7 +36,7 @@
 			<artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
 		</dependency>
 
-		<!-- spring security -->
+		<!-- security -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
@@ -94,35 +91,5 @@
 			<artifactId>lombok</artifactId>
 		</dependency>
 	</dependencies>
-
-<!--	<build>-->
-<!--		<defaultGoal>spring-boot:run</defaultGoal>-->
-<!--		<plugins>-->
-<!--			<plugin>-->
-<!--				<groupId>org.apache.maven.plugins</groupId>-->
-<!--				<artifactId>maven-compiler-plugin</artifactId>-->
-<!--				<configuration>-->
-<!--					<annotationProcessorPaths>-->
-<!--						<path>-->
-<!--							<groupId>org.projectlombok</groupId>-->
-<!--							<artifactId>lombok</artifactId>-->
-<!--						</path>-->
-<!--					</annotationProcessorPaths>-->
-<!--				</configuration>-->
-<!--			</plugin>-->
-<!--			<plugin>-->
-<!--				<groupId>org.springframework.boot</groupId>-->
-<!--				<artifactId>spring-boot-maven-plugin</artifactId>-->
-<!--&lt;!&ndash;				<configuration>&ndash;&gt;-->
-<!--&lt;!&ndash;					<excludes>&ndash;&gt;-->
-<!--&lt;!&ndash;						<exclude>&ndash;&gt;-->
-<!--&lt;!&ndash;							<groupId>org.projectlombok</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;							<artifactId>lombok</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;						</exclude>&ndash;&gt;-->
-<!--&lt;!&ndash;					</excludes>&ndash;&gt;-->
-<!--&lt;!&ndash;				</configuration>&ndash;&gt;-->
-<!--			</plugin>-->
-<!--		</plugins>-->
-<!--	</build>-->
 
 </project>

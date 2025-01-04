@@ -16,11 +16,9 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
-import org.springframework.security.web.server.context.ServerSecurityContextRepository;
-import ru.vasili4.reactive_video.security.filters.AuthenticationFilter;
 import ru.vasili4.reactive_video.security.DefaultPermissionEvaluator;
-import ru.vasili4.reactive_video.security.DefaultSecurityContextRepository;
+import ru.vasili4.reactive_video.security.JwtAuthenticationManager;
+import ru.vasili4.reactive_video.security.filters.AuthenticationFilter;
 import ru.vasili4.reactive_video.security.filters.JWTLoginFilter;
 
 @RequiredArgsConstructor
@@ -33,28 +31,22 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http,
                                                       ServerCodecConfigurer serverCodecConfigurer,
-                                                      ServerSecurityContextRepository serverSecurityContextRepository,
-                                                      ReactiveAuthenticationManager authenticationManager) {
+                                                      ReactiveAuthenticationManager authenticationManager,
+                                                      JwtAuthenticationManager jwtAuthenticationManager) {
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .cors(ServerHttpSecurity.CorsSpec::disable)
-                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
-                .logout(ServerHttpSecurity.LogoutSpec::disable)
                 .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec
                         .pathMatchers(getSwaggerPatterns()).permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/v1/reactive-user/register").permitAll()
                         .anyExchange().authenticated())
-                .securityContextRepository(serverSecurityContextRepository)
-//                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .addFilterAt(new JWTLoginFilter(HttpMethod.POST, "/login", authenticationManager, serverCodecConfigurer), SecurityWebFiltersOrder.AUTHENTICATION)
-                .addFilterAt(new AuthenticationFilter(serverSecurityContextRepository), SecurityWebFiltersOrder.AUTHENTICATION);
+                .addFilterAt(new AuthenticationFilter(jwtAuthenticationManager), SecurityWebFiltersOrder.AUTHENTICATION);
 
         return http.build();
     }
 
     @Bean
-    public UserDetailsRepositoryReactiveAuthenticationManager authenticationManager(PasswordEncoder passwordEncoder) {
+    public ReactiveAuthenticationManager authenticationManager(PasswordEncoder passwordEncoder) {
         UserDetailsRepositoryReactiveAuthenticationManager manager =
                 new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService);
         manager.setPasswordEncoder(passwordEncoder);
@@ -64,11 +56,6 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public ServerSecurityContextRepository serverSecurityContextRepository() {
-        return new DefaultSecurityContextRepository();
     }
 
     @Bean

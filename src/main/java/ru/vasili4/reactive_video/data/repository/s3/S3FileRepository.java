@@ -7,4 +7,5 @@ public interface S3FileRepository {
     void makeBucket(String bucketName);
     ObjectWriteResponse createFile(S3File file, byte[] content);
     void deleteFile(S3File file);
+    boolean isBucketExists(String bucket);
 }
