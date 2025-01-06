@@ -106,7 +106,7 @@ public class MinioS3FileRepository implements S3FileRepository {
     }
 
     @Override
-    public S3File getFullFile(S3File file) {
+    public S3File getFullFileWithoutContent(S3File file) {
         file.setContent(getFullFileContent(file));
 
         return file;

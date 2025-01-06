@@ -4,6 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.FileDocument;
 import ru.vasili4.reactive_video.service.FileService;
+import ru.vasili4.reactive_video.utils.ByteArrayUtils;
+import ru.vasili4.reactive_video.utils.HttpUtils;
 import ru.vasili4.reactive_video.web.dto.response.FileMetadataResponseDto;
 
 import java.nio.file.Paths;
@@ -31,7 +36,7 @@ public class FileReactiveController {
     @Operation(description = "Получение списка метаданных файлов пользователя")
     @GetMapping
     public Flux<FileMetadataResponseDto> getAll(Principal principal) {
-        return fileService.getAllByUserLogin(principal.getName())
+        return fileService.getAllMetadataByUserLogin(principal.getName())
                 .map(FileMetadataResponseDto::new);
     }
 
@@ -43,6 +48,22 @@ public class FileReactiveController {
         return fileService.getFileMetadataById(id)
                 .map(FileMetadataResponseDto::new)
                 .map(ResponseEntity::ok);
+    }
+
+    @Operation(description = "Синхронное получение потока содержимого файла по ID")
+    @GetMapping(value = "/blocking/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @PreAuthorize("hasPermission('file', #id)")
+    public Mono<ResponseEntity<Resource>> getBlockingFileById(
+            @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id
+    ) {
+        HttpHeaders headers = new HttpHeaders();
+        return fileService.getFileMetadataById(id)
+                .doOnSuccess(fileDocument -> headers.setAll(HttpUtils.getFilenameHeaderFromFullPath(fileDocument.getFilePath())))
+                .then(fileService.getBlockingFullFileContentById(id)
+                        .map(bytes -> new ByteArrayResource(ByteArrayUtils.objectArrayToPrimitiveArray(bytes)))
+                        .map(byteArrayResource -> ResponseEntity.ok()
+                                .headers(headers)
+                                .body(byteArrayResource)));
     }
 
     @Operation(description = "Загрузка файла")

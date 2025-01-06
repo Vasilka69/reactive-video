@@ -2,6 +2,8 @@ package ru.vasili4.reactive_video.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +19,9 @@ import ru.vasili4.reactive_video.service.FileService;
 import ru.vasili4.reactive_video.service.validators.FileValidator;
 import ru.vasili4.reactive_video.utils.ByteArrayUtils;
 import ru.vasili4.reactive_video.utils.CustomDataBufferUtils;
+import ru.vasili4.reactive_video.web.dto.response.DataBufferWrapper;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
@@ -25,7 +29,8 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service
 public class FileServiceImpl implements FileService {
 
-    private final static long ASYNC_LOAD_CHUNK_SIZE = 1024 * 512;  // 512 kB
+    private final DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
+    private final static long ASYNC_LOAD_CHUNK_SIZE = 1024 * 4;  // 4 kB
 
     private final FileReactiveRepository fileReactiveRepository;
     private final S3FileRepository s3FileRepository;
@@ -37,6 +42,13 @@ public class FileServiceImpl implements FileService {
     @Override
     public Mono<FileDocument> getFileMetadataById(String id) {
         return fileReactiveRepository.findById(id);
+    }
+
+    @Override
+    public Mono<S3File> getS3FileWithoutContentById(String id) {
+        return getFileMetadataById(id)
+                .map(S3File::new)
+                .map(s3FileRepository::getFullFileWithoutContent);
     }
 
     @Override
@@ -71,7 +83,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public Mono<String> updateFileContent(String id, Mono<FilePart> filePartMono) {
         return fileValidator.validateBeforeUpdateById(id)
-                .then(fileReactiveRepository.findById(id)
+                .then(getFileMetadataById(id)
                         .flatMap(fileEntity ->
                                 filePartMono.flatMap(filePart ->
                                         CustomDataBufferUtils.join(filePart.content())
@@ -90,7 +102,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public Mono<Void> deleteById(String id) {
-        return fileReactiveRepository.findById(id)
+        return getFileMetadataById(id)
                 .doOnSuccess(fileDocument -> s3FileRepository.deleteFile(S3File.of(fileDocument)))
                 .doOnSuccess(fileDocument -> fileReactiveRepository.deleteById(id).subscribe())
                 .doOnSuccess(fileDocument -> userHasFileReactiveRepository.deleteByIdFileId(id).subscribe())
@@ -100,42 +112,45 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Flux<FileDocument> getAllByUserLogin(String login) {
+    public Flux<FileDocument> getAllMetadataByUserLogin(String login) {
         return userHasFileReactiveRepository.findByIdLogin(login)
-                .flatMap(userHasFileDocument -> fileReactiveRepository.findById(userHasFileDocument.getId().getFileId()));
+                .flatMap(userHasFileDocument -> getFileMetadataById(userHasFileDocument.getId().getFileId()));
     }
 
     @Override
-    public Flux<Byte[]> asyncGetFullFileContentById(String id) {
-        return fileReactiveRepository.findById(id)
-                .map(S3File::new)
-                .flux()
-                .flatMap(s3File ->
-                        Flux.generate(() -> new AtomicLong(0L), (state, sink) -> {
-                            long currIndex = state.getAndAdd(ASYNC_LOAD_CHUNK_SIZE);
-                            Byte[] chunk = ByteArrayUtils.primitiveArrayToObjectArray(
-                                    s3FileRepository.safeGetFileContentByRange(s3File, currIndex, ASYNC_LOAD_CHUNK_SIZE)
-                            );
-                            if (chunk.length == 0) {
-                                sink.complete();
-                            } else {
-                                sink.next(chunk);
-                            }
-                            return state;
-                        })
+    public Mono<DataBufferWrapper> getNonBlockingFullFileContentById(String id) {
+        final boolean[] isReady = {false};
+        return getS3FileWithoutContentById(id)
+                .map(s3File -> new DataBufferWrapper(
+                                Flux.generate(() -> new AtomicLong(0L), (state, sink) -> {
+                                    long currIndex = state.getAndAdd(ASYNC_LOAD_CHUNK_SIZE);
+                                    byte[] chunk = s3FileRepository.safeGetFileContentByRange(s3File, currIndex, ASYNC_LOAD_CHUNK_SIZE);
+                                    if (chunk.length == 0) {
+                                        isReady[0] = true;
+                                        sink.complete();
+                                    } else {
+                                        sink.next(dataBufferFactory.wrap(ByteBuffer.wrap(chunk)));
+                                    }
+                                    return state;
+                                }),
+                                ASYNC_LOAD_CHUNK_SIZE,
+                                s3File.getFileInfo().getSize(),
+                        isReady[0]
+                        )
+
                 );
     }
 
     @Override
-    public Mono<Byte[]> syncGetFullFileContentById(String id) {
+    public Mono<Byte[]> getBlockingFullFileContentById(String id) {
         return getFileMetadataById(id)
-                .map(fileDocument -> s3FileRepository.getFullFile(new S3File(fileDocument)))
+                .map(fileDocument -> s3FileRepository.getFullFileWithoutContent(new S3File(fileDocument)))
                 .map(s3File -> ByteArrayUtils.primitiveArrayToObjectArray(s3File.getContent()));
     }
 
     @Override
     public Flux<Byte> getRangeFileContentById(String id, long offset, long length) {
-        return fileReactiveRepository.findById(id)
+        return getFileMetadataById(id)
                 .map(fileDocument -> s3FileRepository.getFileContentByRange(new S3File(fileDocument), offset, length))
                 .map(ByteArrayUtils::primitiveArrayToObjectArray)
                 .flux()

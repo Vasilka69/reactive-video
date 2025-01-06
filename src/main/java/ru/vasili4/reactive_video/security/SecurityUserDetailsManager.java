@@ -4,12 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.data.repository.reactive.UserHasFileReactiveRepository;
 import ru.vasili4.reactive_video.data.repository.reactive.UserReactiveRepository;
-import ru.vasili4.reactive_video.exception.UserNotFoundException;
 
 @Component
 @RequiredArgsConstructor
@@ -25,7 +23,7 @@ public class SecurityUserDetailsManager implements ReactiveUserDetailsService {
 
         return Mono.zip(
                         userReactiveRepository.findById(login)
-                                .switchIfEmpty(Mono.error(new UserNotFoundException("Ошибка получения пользователя по токену"))),
+                                .switchIfEmpty(Mono.empty()),
                         userHasFileReactiveRepository.findByIdLogin(login)
                                 .map(userHasFile -> new SimpleGrantedAuthority(userHasFile.getId().getFileId()))
                                 .collectList()

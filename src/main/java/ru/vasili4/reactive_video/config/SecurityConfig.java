@@ -41,7 +41,6 @@ public class SecurityConfig {
                 .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec
                         .pathMatchers(getSwaggerPatterns()).permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/v1/reactive-user/register").permitAll()
-                        .pathMatchers("/api/**").permitAll()
                         .anyExchange().authenticated())
                 .addFilterAt(new JWTLoginFilter(HttpMethod.POST, "/login", authenticationManager, serverCodecConfigurer), SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAt(new AuthenticationFilter(jwtAuthenticationManager), SecurityWebFiltersOrder.AUTHENTICATION);

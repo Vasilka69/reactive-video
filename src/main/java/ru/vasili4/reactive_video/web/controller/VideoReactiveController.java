@@ -1,5 +1,6 @@
 package ru.vasili4.reactive_video.web.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -7,23 +8,22 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpRange;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.vasili4.reactive_video.data.model.s3.S3File;
 import ru.vasili4.reactive_video.service.FileService;
 import ru.vasili4.reactive_video.utils.ByteArrayUtils;
+import ru.vasili4.reactive_video.utils.HttpUtils;
+import ru.vasili4.reactive_video.web.dto.response.DataBufferWrapper;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.Arrays;
-import java.util.stream.Stream;
-
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Tag(name = "api-video-controller", description = "Видео")
 @RequiredArgsConstructor
@@ -33,118 +33,45 @@ public class VideoReactiveController {
 
     private final FileService fileService;
 
-    @GetMapping
-    public String test() {
-        return "test";
-    }
-
-//    @GetMapping(value = "/filik", produces = "video/mp4")
-//    @GetMapping(value = "/filik")
-    @GetMapping(value = "/filik", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<Flux<Byte>> testFile() throws Exception {
-        byte[] bytes = new FileInputStream("src/main/resources/tmp/1.mp4").readAllBytes();
-        Byte[] byteObjects = new Byte[bytes.length];
-        Arrays.setAll(byteObjects, i -> bytes[i]);
-
-        return ResponseEntity
-                .status(HttpStatus.PARTIAL_CONTENT)
-                .header(HttpHeaders.CONTENT_RANGE, "bytes " + 0 + "-" + (byteObjects.length - 1) + "/" + (byteObjects.length - 1))
-                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(byteObjects.length - 1))
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(Flux.fromStream(Stream.of(byteObjects)));
-    }
-
-    @GetMapping(value = "/real-reactive-filik")
-    public Mono<ResponseEntity<Flux<DataBuffer>>> realReactiveFilik() {
-
-        return null;
-    }
-
-//    @GetMapping(value = "/filik", produces = "video/mp4")
-//    @GetMapping(value = "/filik")
-    @GetMapping(value = "/filikBlocking", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<byte[]> testFileBlocking() throws Exception {
-        byte[] bytes = new FileInputStream("src/main/resources/tmp/1.mp4").readAllBytes();
-        Byte[] byteObjects = new Byte[bytes.length];
-        Arrays.setAll(byteObjects, i -> bytes[i]);
-
-        return ResponseEntity
-                .status(HttpStatus.PARTIAL_CONTENT)
-                .header(HttpHeaders.CONTENT_RANGE, "bytes " + 0 + "-" + (byteObjects.length - 1) + "/" + (byteObjects.length - 1))
-                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(byteObjects.length - 1))
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(bytes);
-//                .body(byteObjects);
-    }
-
-    private static final String FILE_PATH = "src/main/resources/tmp"; // Путь к файлу
-
-//        @GetMapping("/{id}")
-//    @PreAuthorize("hasPermission('file', #id)")
-//    public Mono<ResponseEntity<FileMetadataResponseDto>> getById(
-//            @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id) {
-
+    @Operation(description = "Синхронное получение видеопотока по ID")
     @GetMapping(value = "/{id}", produces = "video/mp4")
     @PreAuthorize("hasPermission('file', #id)")
-    public Mono<Resource> getFileById(
+    public Mono<ResponseEntity<Resource>> getBlockingVideoStreamById(
             @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id
     ) {
-        return fileService.syncGetFullFileContentById(id)
-                .map(ByteArrayUtils::objectArrayToPrimitiveArray)
-                .map(ByteArrayResource::new);
+        HttpHeaders headers = new HttpHeaders();
+        return fileService.getFileMetadataById(id)
+                .doOnSuccess(fileDocument -> headers.setAll(HttpUtils.getFilenameHeaderFromFullPath(fileDocument.getFilePath())))
+                .then(fileService.getBlockingFullFileContentById(id)
+                        .map(bytes -> new ByteArrayResource(ByteArrayUtils.objectArrayToPrimitiveArray(bytes)))
+                        .map(byteArrayResource -> ResponseEntity.ok()
+                                .headers(headers)
+                                .body(byteArrayResource)));
     }
 
-//    @GetMapping("/files/{filename}")
-    @GetMapping("/files")
-    public ResponseEntity<byte[]> getFile(
-//            @PathVariable String filename,
-                                          @RequestHeader HttpHeaders headers) throws IOException {
-        String filename = "1.mp4";
-        File file = new File(FILE_PATH + "/" + filename);
-        long fileLength = file.length();
+    @GetMapping(value = "/download/{id}", produces = "video/mp4")
+    public ResponseEntity<Flux<DataBuffer>> downloadFile(
+            @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id,
+            @RequestHeader HttpHeaders headers) throws ExecutionException, InterruptedException {
+        S3File s3FileWithoutContentById = fileService.getS3FileWithoutContentById(id).toFuture().get();
 
-        String rangeHeader = headers.getFirst(HttpHeaders.RANGE);
-        if (rangeHeader == null) {
-            // Если заголовок Range отсутствует, возвращаем весь файл
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .contentLength(fileLength)
-                    .body(getFileContent(file, 0, fileLength - 1));
-        }
+        List<HttpRange> ranges = headers.getRange();
+//        start = ranges.get(0).getRangeStart(s3FileWithoutContentById.getFileInfo().getSize());
+//        end = ranges.get(0).getRangeEnd(s3FileWithoutContentById.getFileInfo().getSize());
 
-        // Парсим заголовок Range
-        String[] ranges = rangeHeader.substring(6).split("-");
-        long start = Long.parseLong(ranges[0]);
-        long end = (ranges.length > 1) ? Long.parseLong(ranges[1]) : fileLength - 1;
 
-        if (start >= fileLength) {
-            // Если запрашиваемый диапазон выходит за пределы файла
-            return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
-                    .header(HttpHeaders.CONTENT_RANGE, "bytes */" + fileLength)
-                    .build();
-        }
+        DataBufferWrapper dataBufferFlux = fileService.getNonBlockingFullFileContentById(id).toFuture().get();
 
-        byte[] content = getFileContent(file, start, end);
-        long contentLength = content.length;
+        long start = 0;
+        long end = 0;
 
-        return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
-                .header(HttpHeaders.CONTENT_RANGE, "bytes " + start + "-" + end + "/" + fileLength)
-                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(contentLength))
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(content);
+        return ResponseEntity.status(dataBufferFlux.getIsReady() ? 200 : 206)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + Paths.get(s3FileWithoutContentById.getFileDocument().getFilePath()).getFileName() + "\"")
+                .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                .header(HttpHeaders.CONTENT_RANGE, "bytes " + ranges.get(0).getRangeStart(s3FileWithoutContentById.getFileInfo().getSize()) + "-" + ranges.get(0).getRangeStart(s3FileWithoutContentById.getFileInfo().getSize()) + dataBufferFlux.getChunkLength() + "/" + dataBufferFlux.getTotalFileSize())
+                .contentType(MediaType.valueOf("video/mp4"))
+                .contentLength(ranges.get(0).getRangeStart(s3FileWithoutContentById.getFileInfo().getSize()) - ranges.get(0).getRangeStart(s3FileWithoutContentById.getFileInfo().getSize()) + dataBufferFlux.getChunkLength() + 1)
+                .body(dataBufferFlux.getDataBuffers());
     }
-
-    private byte[] getFileContent(File file, long start, long end) throws IOException {
-        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
-            raf.seek(start); // Переходим к началу диапазона
-            byte[] bytes = new byte[(int) (end - start + 1)];
-            raf.readFully(bytes); // Читаем диапазон
-            return bytes;
-        }
-    }
-
-//    private byte[] testset() throws Exception {
-//        DataBufferUtils.
-//    }
 
 }

@@ -12,7 +12,7 @@ public interface S3FileRepository {
 
     void fillFileInfo(S3File file);
 
-    S3File getFullFile(S3File file);
+    S3File getFullFileWithoutContent(S3File file);
     byte[] getFullFileContent(S3File file);
     byte[] safeGetFileContentByRange(S3File file, long offset, long length);
     byte[] getFileContentByRange(S3File file, long offset, long length);
