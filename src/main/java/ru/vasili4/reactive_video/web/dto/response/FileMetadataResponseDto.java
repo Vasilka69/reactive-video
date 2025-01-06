@@ -7,6 +7,8 @@ import ru.vasili4.reactive_video.data.model.reactive.mongo.FileDocument;
 @Data
 @Schema(description = "Метаданные файла")
 public class FileMetadataResponseDto {
+    @Schema(description = "Идентификатор файла")
+    private String fileId;
     @Schema(description = "Bucket S3 хранилища для файла")
     private String bucket;
     @Schema(description = "Путь файла в S3 хранилище")
@@ -14,6 +16,7 @@ public class FileMetadataResponseDto {
 
 
     public FileMetadataResponseDto(FileDocument fileDocument) {
+        this.fileId = fileDocument.getFileId();
         this.bucket = fileDocument.getBucket();
         this.filePath = fileDocument.getFilePath();
     }

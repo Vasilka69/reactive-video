@@ -1,14 +1,21 @@
 package ru.vasili4.reactive_video.web.controller;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.vasili4.reactive_video.service.FileService;
+import ru.vasili4.reactive_video.utils.ByteArrayUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,9 +26,12 @@ import java.util.stream.Stream;
 
 
 @Tag(name = "api-video-controller", description = "Видео")
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/reactive-video")
 public class VideoReactiveController {
+
+    private final FileService fileService;
 
     @GetMapping
     public String test() {
@@ -68,6 +78,21 @@ public class VideoReactiveController {
     }
 
     private static final String FILE_PATH = "src/main/resources/tmp"; // Путь к файлу
+
+//        @GetMapping("/{id}")
+//    @PreAuthorize("hasPermission('file', #id)")
+//    public Mono<ResponseEntity<FileMetadataResponseDto>> getById(
+//            @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id) {
+
+    @GetMapping(value = "/{id}", produces = "video/mp4")
+    @PreAuthorize("hasPermission('file', #id)")
+    public Mono<Resource> getFileById(
+            @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id
+    ) {
+        return fileService.syncGetFullFileContentById(id)
+                .map(ByteArrayUtils::objectArrayToPrimitiveArray)
+                .map(ByteArrayResource::new);
+    }
 
 //    @GetMapping("/files/{filename}")
     @GetMapping("/files")

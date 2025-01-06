@@ -31,7 +31,7 @@ public class FileReactiveController {
     @Operation(description = "Получение списка метаданных файлов пользователя")
     @GetMapping
     public Flux<FileMetadataResponseDto> getAll(Principal principal) {
-        return fileService.getByUserLogin(principal.getName())
+        return fileService.getAllByUserLogin(principal.getName())
                 .map(FileMetadataResponseDto::new);
     }
 
@@ -40,7 +40,7 @@ public class FileReactiveController {
     @PreAuthorize("hasPermission('file', #id)")
     public Mono<ResponseEntity<FileMetadataResponseDto>> getById(
             @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id) {
-        return fileService.getById(id)
+        return fileService.getFileMetadataById(id)
                 .map(FileMetadataResponseDto::new)
                 .map(ResponseEntity::ok);
     }
@@ -62,6 +62,19 @@ public class FileReactiveController {
                                 filePart,
                                 principal.getName()))
                 .map(id -> ResponseEntity.status(HttpStatus.CREATED).body(id));
+    }
+
+    @Operation(description = "Обновление содержимого файла")
+    @PostMapping(value = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PreAuthorize("hasPermission('file', #id)")
+    public Mono<ResponseEntity<String>> update(
+            @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id,
+            @Parameter(description = "Файл", required = true) @RequestPart("file") Mono<FilePart> filePart) {
+        return filePart.flatMap(file ->
+                        fileService.updateFileContent(
+                                id,
+                                filePart))
+                .map(fileId -> ResponseEntity.status(HttpStatus.CREATED).body(fileId));
     }
 
     @Operation(description = "Удаление файла по ID")

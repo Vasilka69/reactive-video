@@ -1,11 +1,19 @@
 package ru.vasili4.reactive_video.data.repository.s3;
 
-import io.minio.ObjectWriteResponse;
 import ru.vasili4.reactive_video.data.model.s3.S3File;
 
 public interface S3FileRepository {
-    void makeBucket(String bucketName);
-    ObjectWriteResponse createFile(S3File file, byte[] content);
-    void deleteFile(S3File file);
     boolean isBucketExists(String bucket);
+    void createBucket(String bucketName);
+
+    boolean isFileExists(S3File file);
+    void uploadFile(S3File file);
+    void deleteFile(S3File file);
+
+    void fillFileInfo(S3File file);
+
+    S3File getFullFile(S3File file);
+    byte[] getFullFileContent(S3File file);
+    byte[] safeGetFileContentByRange(S3File file, long offset, long length);
+    byte[] getFileContentByRange(S3File file, long offset, long length);
 }

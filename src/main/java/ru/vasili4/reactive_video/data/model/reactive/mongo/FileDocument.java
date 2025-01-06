@@ -9,6 +9,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @Document("file")
 public class FileDocument {
+    public final static String ENTITY_TYPE = "File";
+
     @Id
     private String fileId;
     private String bucket;

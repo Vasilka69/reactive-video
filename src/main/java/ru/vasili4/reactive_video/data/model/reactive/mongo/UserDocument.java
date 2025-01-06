@@ -1,6 +1,9 @@
 package ru.vasili4.reactive_video.data.model.reactive.mongo;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.vasili4.reactive_video.web.dto.request.UserRequestDto;
@@ -10,8 +13,6 @@ import ru.vasili4.reactive_video.web.dto.request.UserRequestDto;
 @AllArgsConstructor
 @Document("user")
 public class UserDocument {
-
-    public final static String ENTITY_TYPE = "user";
 
     @Id
     private String login;
