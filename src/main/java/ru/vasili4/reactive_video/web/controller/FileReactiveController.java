@@ -58,15 +58,15 @@ public class FileReactiveController {
     ) {
         HttpHeaders headers = new HttpHeaders();
         return fileService.getFileMetadataById(id)
-                .doOnSuccess(fileDocument -> headers.setAll(HttpUtils.getFilenameHeaderFromFullPath(fileDocument.getFilePath())))
-                .then(fileService.getBlockingFullFileContentById(id)
+                .doOnSuccess(fileDocument -> headers.setAll(HttpUtils.getContentDispositionHeaderByPath(fileDocument.getFilePath())))
+                .then(fileService.blockingGetFullFileContentById(id)
                         .map(bytes -> new ByteArrayResource(ByteArrayUtils.objectArrayToPrimitiveArray(bytes)))
                         .map(byteArrayResource -> ResponseEntity.ok()
                                 .headers(headers)
                                 .body(byteArrayResource)));
     }
 
-    @Operation(description = "Загрузка файла")
+    @Operation(description = "Загрузка файла в хранилище")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public Mono<ResponseEntity<String>> create(
             Principal principal,

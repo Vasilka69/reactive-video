@@ -17,4 +17,10 @@ public class ByteArrayUtils {
         }
         return bytes;
     }
+
+    public static boolean isRangeFinished(Long offset, Long length, Long totalSize) {
+        if (offset >= totalSize || length == 0)
+            return true;
+        return false;
+    }
 }

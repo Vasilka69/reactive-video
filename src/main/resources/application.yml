@@ -14,6 +14,9 @@ s3:
   access_key: "ObqQJsbLKk22VWYMyyQS"
   secret_key: "gO0ZOI52F0SncUn3EySmsSegxPeRBMckfrpHhy4A"
 
+file:
+  async-load-chunk-size: "#{1024 * 4}"
+
 server:
   port: 8081
 

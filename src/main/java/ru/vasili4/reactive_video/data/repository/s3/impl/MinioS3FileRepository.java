@@ -3,11 +3,19 @@ package ru.vasili4.reactive_video.data.repository.s3.impl;
 import io.minio.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.compress.utils.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.data.model.s3.S3File;
 import ru.vasili4.reactive_video.data.model.s3.S3FileInfo;
 import ru.vasili4.reactive_video.data.repository.s3.S3FileRepository;
 import ru.vasili4.reactive_video.exception.S3Exception;
+import ru.vasili4.reactive_video.utils.ByteArrayUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -16,7 +24,12 @@ import java.io.InputStream;
 @Repository
 public class MinioS3FileRepository implements S3FileRepository {
 
+    @Value("${file.async-load-chunk-size}")
+    private long asyncLoadChunkSize;
+    private final DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
+
     private final MinioClient minioClient;
+    private final MinioAsyncClient minioAsyncClient;
 
     @Override
     public boolean isBucketExists(String bucket) {
@@ -113,6 +126,40 @@ public class MinioS3FileRepository implements S3FileRepository {
     }
 
     @Override
+    public Flux<DataBuffer> asyncGetFileContentByRange(S3File file, long offset, long length) {
+        try {
+            return Mono.fromFuture(minioAsyncClient.getObject(GetObjectArgs.builder()
+                            .bucket(file.getFileDocument().getBucket())
+                            .object(file.getFileDocument().getFilePath())
+                            .offset(offset)
+                            .length(length)
+                            .build()))
+                    .flux()
+                    .flatMap(getObjectResponse -> DataBufferUtils.readInputStream(
+                                    () -> getObjectResponse,
+                                    dataBufferFactory,
+                                    (int) length
+                            )
+                    );
+        } catch (Exception e) {
+            throw S3Exception.withDefaultMessageTemplate(e.getMessage());
+        }
+//        try (InputStream stream =
+//                     minioAsyncClient.getObject(
+//                             GetObjectArgs.builder()
+//                                     .bucket(file.getFileDocument().getBucket())
+//                                     .object(file.getFileDocument().getFilePath())
+//                                     .offset(offset)
+//                                     .length(length)
+//                                     .build()
+//                     )) {
+//            return IOUtils.toByteArray(stream);
+//        } catch (Exception e) {
+//            throw S3Exception.withDefaultMessageTemplate(e.getMessage());
+//        }
+    }
+
+    @Override
     public byte[] getFullFileContent(S3File file) {
         fillFileInfo(file);
         return getFileContentByRange(file, 0, file.getFileInfo().getSize());
@@ -122,7 +169,7 @@ public class MinioS3FileRepository implements S3FileRepository {
     public byte[] safeGetFileContentByRange(S3File file, long offset, long length) {
         fillFileInfo(file);
 
-        if (offset >= file.getFileInfo().getSize() || length == 0)
+        if (ByteArrayUtils.isRangeFinished(offset, length, file.getFileInfo().getSize()))
             return new byte[0];
 
         return getFileContentByRange(file, offset, length);

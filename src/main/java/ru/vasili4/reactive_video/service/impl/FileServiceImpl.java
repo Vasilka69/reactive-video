@@ -2,6 +2,8 @@ package ru.vasili4.reactive_video.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.codec.multipart.FilePart;
@@ -15,11 +17,11 @@ import ru.vasili4.reactive_video.data.model.s3.S3File;
 import ru.vasili4.reactive_video.data.repository.reactive.FileReactiveRepository;
 import ru.vasili4.reactive_video.data.repository.reactive.UserHasFileReactiveRepository;
 import ru.vasili4.reactive_video.data.repository.s3.S3FileRepository;
+import ru.vasili4.reactive_video.exception.BaseReactiveVideoException;
 import ru.vasili4.reactive_video.service.FileService;
 import ru.vasili4.reactive_video.service.validators.FileValidator;
 import ru.vasili4.reactive_video.utils.ByteArrayUtils;
 import ru.vasili4.reactive_video.utils.CustomDataBufferUtils;
-import ru.vasili4.reactive_video.web.dto.response.DataBufferWrapper;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicLong;
@@ -30,7 +32,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class FileServiceImpl implements FileService {
 
     private final DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
-    private final static long ASYNC_LOAD_CHUNK_SIZE = 1024 * 4;  // 4 kB
+
+    @Value("${file.async-load-chunk-size}")
+    private long asyncLoadChunkSize;
 
     private final FileReactiveRepository fileReactiveRepository;
     private final S3FileRepository s3FileRepository;
@@ -118,40 +122,72 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Mono<DataBufferWrapper> getNonBlockingFullFileContentById(String id) {
-        final boolean[] isReady = {false};
+    public Flux<DataBuffer> asyncGetFullFileContentById(String id) {
         return getS3FileWithoutContentById(id)
-                .map(s3File -> new DataBufferWrapper(
-                                Flux.generate(() -> new AtomicLong(0L), (state, sink) -> {
-                                    long currIndex = state.getAndAdd(ASYNC_LOAD_CHUNK_SIZE);
-                                    byte[] chunk = s3FileRepository.safeGetFileContentByRange(s3File, currIndex, ASYNC_LOAD_CHUNK_SIZE);
+                .flux()
+                .flatMap(s3File -> Flux.generate(() -> new AtomicLong(0L), (state, sink) -> {
+                            long currIndex = state.getAndAdd(asyncLoadChunkSize);
+                            if (ByteArrayUtils.isRangeFinished(currIndex, asyncLoadChunkSize, s3File.getFileInfo().getSize())) {
+                                sink.complete();
+                                return state;
+                            } else {
+                                try {
+                                    sink.next(CustomDataBufferUtils.join(
+                                            s3FileRepository.asyncGetFileContentByRange(s3File, currIndex, asyncLoadChunkSize)
+                                    ).toFuture().get());
+                                } catch (Exception e) {
+                                    throw new BaseReactiveVideoException("При загрузке файла произошла ошибка: ", e);
+                                }
+                            }
+                            return state;
+                        })
+                );
+    }
+
+    @Override
+    public Flux<DataBuffer> getFullFileContentById(String id) {
+        return getS3FileWithoutContentById(id)
+                .flux()
+                .flatMap(s3File -> Flux.generate(() -> new AtomicLong(0L), (state, sink) -> {
+                                    long currIndex = state.getAndAdd(asyncLoadChunkSize);
+                                    byte[] chunk = s3FileRepository.safeGetFileContentByRange(s3File, currIndex, asyncLoadChunkSize);
                                     if (chunk.length == 0) {
-                                        isReady[0] = true;
                                         sink.complete();
                                     } else {
                                         sink.next(dataBufferFactory.wrap(ByteBuffer.wrap(chunk)));
                                     }
                                     return state;
-                                }),
-                                ASYNC_LOAD_CHUNK_SIZE,
-                                s3File.getFileInfo().getSize(),
-                        isReady[0]
-                        )
-
+                                })
+//                .map(s3File -> new DataBufferWrapper(
+//                                Flux.generate(() -> new AtomicLong(0L), (state, sink) -> {
+//                                    long currIndex = state.getAndAdd(ASYNC_LOAD_CHUNK_SIZE);
+//                                    byte[] chunk = s3FileRepository.safeGetFileContentByRange(s3File, currIndex, ASYNC_LOAD_CHUNK_SIZE);
+//                                    if (chunk.length == 0) {
+//                                        isReady[0] = true;
+//                                        sink.complete();
+//                                    } else {
+//                                        sink.next(dataBufferFactory.wrap(ByteBuffer.wrap(chunk)));
+//                                    }
+//                                    return state;
+//                                }),
+//                                ASYNC_LOAD_CHUNK_SIZE,
+//                                s3File.getFileInfo().getSize(),
+//                        isReady[0]
+//                        )
                 );
     }
 
     @Override
-    public Mono<Byte[]> getBlockingFullFileContentById(String id) {
+    public Mono<Byte[]> blockingGetFullFileContentById(String id) {
         return getFileMetadataById(id)
                 .map(fileDocument -> s3FileRepository.getFullFileWithoutContent(new S3File(fileDocument)))
                 .map(s3File -> ByteArrayUtils.primitiveArrayToObjectArray(s3File.getContent()));
     }
 
     @Override
-    public Flux<Byte> getRangeFileContentById(String id, long offset, long length) {
+    public Flux<Byte> blockingGetRangeFileContentById(String id, long offset, long length) {
         return getFileMetadataById(id)
-                .map(fileDocument -> s3FileRepository.getFileContentByRange(new S3File(fileDocument), offset, length))
+                .map(fileDocument -> s3FileRepository.safeGetFileContentByRange(new S3File(fileDocument), offset, length))
                 .map(ByteArrayUtils::primitiveArrayToObjectArray)
                 .flux()
                 .flatMap(Flux::fromArray);
