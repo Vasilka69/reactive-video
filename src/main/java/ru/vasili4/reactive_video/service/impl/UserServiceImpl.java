@@ -9,7 +9,6 @@ import ru.vasili4.reactive_video.data.model.reactive.mongo.UserDocument;
 import ru.vasili4.reactive_video.data.repository.reactive.UserReactiveRepository;
 import ru.vasili4.reactive_video.exception.UserAlreadyExistsException;
 import ru.vasili4.reactive_video.service.UserService;
-import ru.vasili4.reactive_video.service.validators.UserValidator;
 import ru.vasili4.reactive_video.web.dto.request.UserRequestDto;
 
 @Slf4j
@@ -19,7 +18,6 @@ public class UserServiceImpl implements UserService {
 
     private final UserReactiveRepository userReactiveRepository;
     private final PasswordEncoder passwordEncoder;
-
 
     @Override
     public Mono<String> register(UserRequestDto dto) {

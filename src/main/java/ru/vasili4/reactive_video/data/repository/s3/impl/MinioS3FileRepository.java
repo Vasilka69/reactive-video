@@ -141,19 +141,6 @@ public class MinioS3FileRepository implements S3FileRepository {
         } catch (Exception e) {
             throw S3Exception.withDefaultMessageTemplate(e.getMessage());
         }
-//        try (InputStream stream =
-//                     minioAsyncClient.getObject(
-//                             GetObjectArgs.builder()
-//                                     .bucket(file.getFileDocument().getBucket())
-//                                     .object(file.getFileDocument().getFilePath())
-//                                     .offset(offset)
-//                                     .length(length)
-//                                     .build()
-//                     )) {
-//            return IOUtils.toByteArray(stream);
-//        } catch (Exception e) {
-//            throw S3Exception.withDefaultMessageTemplate(e.getMessage());
-//        }
     }
 
     @Override

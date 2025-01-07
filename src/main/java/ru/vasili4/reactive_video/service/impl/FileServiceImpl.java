@@ -149,31 +149,15 @@ public class FileServiceImpl implements FileService {
         return getS3FileWithoutContentById(id)
                 .flux()
                 .flatMap(s3File -> Flux.generate(() -> new AtomicLong(0L), (state, sink) -> {
-                                    long currIndex = state.getAndAdd(asyncLoadChunkSize);
-                                    byte[] chunk = s3FileRepository.safeGetFileContentByRange(s3File, currIndex, asyncLoadChunkSize);
-                                    if (chunk.length == 0) {
-                                        sink.complete();
-                                    } else {
-                                        sink.next(dataBufferFactory.wrap(ByteBuffer.wrap(chunk)));
-                                    }
-                                    return state;
-                                })
-//                .map(s3File -> new DataBufferWrapper(
-//                                Flux.generate(() -> new AtomicLong(0L), (state, sink) -> {
-//                                    long currIndex = state.getAndAdd(ASYNC_LOAD_CHUNK_SIZE);
-//                                    byte[] chunk = s3FileRepository.safeGetFileContentByRange(s3File, currIndex, ASYNC_LOAD_CHUNK_SIZE);
-//                                    if (chunk.length == 0) {
-//                                        isReady[0] = true;
-//                                        sink.complete();
-//                                    } else {
-//                                        sink.next(dataBufferFactory.wrap(ByteBuffer.wrap(chunk)));
-//                                    }
-//                                    return state;
-//                                }),
-//                                ASYNC_LOAD_CHUNK_SIZE,
-//                                s3File.getFileInfo().getSize(),
-//                        isReady[0]
-//                        )
+                            long currIndex = state.getAndAdd(asyncLoadChunkSize);
+                            byte[] chunk = s3FileRepository.safeGetFileContentByRange(s3File, currIndex, asyncLoadChunkSize);
+                            if (chunk.length == 0) {
+                                sink.complete();
+                            } else {
+                                sink.next(dataBufferFactory.wrap(ByteBuffer.wrap(chunk)));
+                            }
+                            return state;
+                        })
                 );
     }
 
