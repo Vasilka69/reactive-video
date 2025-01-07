@@ -1,0 +1,585 @@
+{
+	"info": {
+		"_postman_id": "98089b68-42f5-4418-a110-5d32df3bd8a6",
+		"name": "Reactive Video",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24930066"
+	},
+	"item": [
+		{
+			"name": "File",
+			"item": [
+				{
+					"name": "Metadata",
+					"item": [
+						{
+							"name": "Get By Id",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM2NDQxNjY0fQ.Z9ucxmcQ5pkHWaWkkpZPk7ABMqOed2Z37VXGgIN9Hac0IODTB72UV3RrJLerYilbIhAkU3pRE6gHnUA9RmZ9KA",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMiIsImV4cCI6MTczNjQ0MTg5MX0.r0jJQ6QRiXKoNzbOj6mQst6my8_pdaU6hwNSVywdUtl3B6pkFu_ua6yDqzqmDu6Yx-8ZPPce-ah-4jiRPnx2Pw",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxNSIsImV4cCI6MTczNjczMTYxMn0.2GPxpd57lUZ3Pp7uQ7wJTji2XFL8f-MvVf0YtPHTZBvsK6yNWzvnLPpIlYnyI0oI0q55SDrWoKDdR6im3G-xeA",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMzMxMjIyMjIiLCJleHAiOjE3MzY4MzEzODB9.7LlOz4yR0no9wOGVOz69R8Sm-hBdGOGzuEm3b1Vs3gNqP3dHjje6voXzqlH5HGVAHzIEiPPzFhBFSjtk2Nau0Q",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8081/api/v1/reactive/file-metadata/357991ff-e8f9-4b2b-abb2-5ec87d531346",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"api",
+										"v1",
+										"reactive",
+										"file-metadata",
+										"357991ff-e8f9-4b2b-abb2-5ec87d531346"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get All",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM2NDQxNjY0fQ.Z9ucxmcQ5pkHWaWkkpZPk7ABMqOed2Z37VXGgIN9Hac0IODTB72UV3RrJLerYilbIhAkU3pRE6gHnUA9RmZ9KA",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMiIsImV4cCI6MTczNjQ0MTg5MX0.r0jJQ6QRiXKoNzbOj6mQst6my8_pdaU6hwNSVywdUtl3B6pkFu_ua6yDqzqmDu6Yx-8ZPPce-ah-4jiRPnx2Pw",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMiIsImV4cCI6MTczNjczODI0NX0.A0mWDDdNvJGf7uhZ3gtzWkumxlwTfgCavI8CLc5Zhtntr3SDNikn96cr4wKU0X9tqpbjOMixNahwLr2UBVT43g",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMzMxMjIyMjIiLCJleHAiOjE3MzY4MzEzODB9.7LlOz4yR0no9wOGVOz69R8Sm-hBdGOGzuEm3b1Vs3gNqP3dHjje6voXzqlH5HGVAHzIEiPPzFhBFSjtk2Nau0Q",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxNSIsImV4cCI6MTczNjczMTYxMn0.2GPxpd57lUZ3Pp7uQ7wJTji2XFL8f-MvVf0YtPHTZBvsK6yNWzvnLPpIlYnyI0oI0q55SDrWoKDdR6im3G-xeA",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8081/api/v1/reactive/file-metadata",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"api",
+										"v1",
+										"reactive",
+										"file-metadata"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Create File",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM2NDQxNjY0fQ.Z9ucxmcQ5pkHWaWkkpZPk7ABMqOed2Z37VXGgIN9Hac0IODTB72UV3RrJLerYilbIhAkU3pRE6gHnUA9RmZ9KA",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxNSIsImV4cCI6MTczNjczMTYxMn0.2GPxpd57lUZ3Pp7uQ7wJTji2XFL8f-MvVf0YtPHTZBvsK6yNWzvnLPpIlYnyI0oI0q55SDrWoKDdR6im3G-xeA",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "bucket",
+									"value": "test",
+									"type": "text"
+								},
+								{
+									"key": "filePath",
+									"value": "123/321/1\\2/3\\/ETST2ss",
+									"type": "text"
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/vasili4/Desktop/stupid pngs/0.0.png",
+									"disabled": true
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/vasili4/Desktop/stupid pngs/0_0.gif",
+									"disabled": true
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/vasili4/Desktop/stupid pngs/animation.gif.mp4",
+									"disabled": true
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/vasili4/Videos/1.mp4"
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/v1/reactive/file",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"reactive",
+								"file"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update File",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM2NDQxNjY0fQ.Z9ucxmcQ5pkHWaWkkpZPk7ABMqOed2Z37VXGgIN9Hac0IODTB72UV3RrJLerYilbIhAkU3pRE6gHnUA9RmZ9KA",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxNSIsImV4cCI6MTczNjczMTYxMn0.2GPxpd57lUZ3Pp7uQ7wJTji2XFL8f-MvVf0YtPHTZBvsK6yNWzvnLPpIlYnyI0oI0q55SDrWoKDdR6im3G-xeA",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "bucket",
+									"value": "test",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "filePath",
+									"value": "123/321/1\\2/3\\/ETST2",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/vasili4/Desktop/stupid pngs/0.0.png",
+									"disabled": true
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/vasili4/Desktop/stupid pngs/0_0.gif",
+									"disabled": true
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/vasili4/Desktop/stupid pngs/animation.gif.mp4",
+									"disabled": true
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/vasili4/Videos/1.mp4",
+									"disabled": true
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/vasili4/Desktop/stupid pngs/_qUTpmUWdVM.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/v1/reactive/file/ad0a097d-39f6-42fd-880f-6775e648aea8",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"reactive",
+								"file",
+								"ad0a097d-39f6-42fd-880f-6775e648aea8"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete By Id",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM2NDQxNjY0fQ.Z9ucxmcQ5pkHWaWkkpZPk7ABMqOed2Z37VXGgIN9Hac0IODTB72UV3RrJLerYilbIhAkU3pRE6gHnUA9RmZ9KA",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMiIsImV4cCI6MTczNjQ0MTg5MX0.r0jJQ6QRiXKoNzbOj6mQst6my8_pdaU6hwNSVywdUtl3B6pkFu_ua6yDqzqmDu6Yx-8ZPPce-ah-4jiRPnx2Pw",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxNSIsImV4cCI6MTczNjczMTYxMn0.2GPxpd57lUZ3Pp7uQ7wJTji2XFL8f-MvVf0YtPHTZBvsK6yNWzvnLPpIlYnyI0oI0q55SDrWoKDdR6im3G-xeA",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8081/api/v1/reactive/file/ad0a097d-39f6-42fd-880f-6775e648aea8",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"reactive",
+								"file",
+								"ad0a097d-39f6-42fd-880f-6775e648aea8"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sync Get File Stream By Id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM2NDQxNjY0fQ.Z9ucxmcQ5pkHWaWkkpZPk7ABMqOed2Z37VXGgIN9Hac0IODTB72UV3RrJLerYilbIhAkU3pRE6gHnUA9RmZ9KA",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMiIsImV4cCI6MTczNjQ0MTg5MX0.r0jJQ6QRiXKoNzbOj6mQst6my8_pdaU6hwNSVywdUtl3B6pkFu_ua6yDqzqmDu6Yx-8ZPPce-ah-4jiRPnx2Pw",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxNSIsImV4cCI6MTczNjczMTYxMn0.2GPxpd57lUZ3Pp7uQ7wJTji2XFL8f-MvVf0YtPHTZBvsK6yNWzvnLPpIlYnyI0oI0q55SDrWoKDdR6im3G-xeA",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMzMxMjIyMjIiLCJleHAiOjE3MzY4MzEzODB9.7LlOz4yR0no9wOGVOz69R8Sm-hBdGOGzuEm3b1Vs3gNqP3dHjje6voXzqlH5HGVAHzIEiPPzFhBFSjtk2Nau0Q",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8081/api/v1/reactive/file/sync/39833823-4aa8-461c-a83f-a2cbab2027b9",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"reactive",
+								"file",
+								"sync",
+								"39833823-4aa8-461c-a83f-a2cbab2027b9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Async Get File Stream By Id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM2NDQxNjY0fQ.Z9ucxmcQ5pkHWaWkkpZPk7ABMqOed2Z37VXGgIN9Hac0IODTB72UV3RrJLerYilbIhAkU3pRE6gHnUA9RmZ9KA",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMiIsImV4cCI6MTczNjQ0MTg5MX0.r0jJQ6QRiXKoNzbOj6mQst6my8_pdaU6hwNSVywdUtl3B6pkFu_ua6yDqzqmDu6Yx-8ZPPce-ah-4jiRPnx2Pw",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxNSIsImV4cCI6MTczNjczMTYxMn0.2GPxpd57lUZ3Pp7uQ7wJTji2XFL8f-MvVf0YtPHTZBvsK6yNWzvnLPpIlYnyI0oI0q55SDrWoKDdR6im3G-xeA",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMzMxMjIyMjIiLCJleHAiOjE3MzY4MzEzODB9.7LlOz4yR0no9wOGVOz69R8Sm-hBdGOGzuEm3b1Vs3gNqP3dHjje6voXzqlH5HGVAHzIEiPPzFhBFSjtk2Nau0Q",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8081/api/v1/reactive/file/async/39833823-4aa8-461c-a83f-a2cbab2027b9",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"reactive",
+								"file",
+								"async",
+								"39833823-4aa8-461c-a83f-a2cbab2027b9"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"login\": \"1assd\",\r\n    \"password\": \"ssssssssssss\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/v1/reactive/user/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"reactive",
+								"user",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"login\": \"1assd\",\r\n    \"password\": \"ssssssssssss\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/v1/reactive/user/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"reactive",
+								"user",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Video",
+			"item": [
+				{
+					"name": "Sync Get Video Stream By Id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM2NDQxNjY0fQ.Z9ucxmcQ5pkHWaWkkpZPk7ABMqOed2Z37VXGgIN9Hac0IODTB72UV3RrJLerYilbIhAkU3pRE6gHnUA9RmZ9KA",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMiIsImV4cCI6MTczNjQ0MTg5MX0.r0jJQ6QRiXKoNzbOj6mQst6my8_pdaU6hwNSVywdUtl3B6pkFu_ua6yDqzqmDu6Yx-8ZPPce-ah-4jiRPnx2Pw",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxNSIsImV4cCI6MTczNjczMTYxMn0.2GPxpd57lUZ3Pp7uQ7wJTji2XFL8f-MvVf0YtPHTZBvsK6yNWzvnLPpIlYnyI0oI0q55SDrWoKDdR6im3G-xeA",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMzMxMjIyMjIiLCJleHAiOjE3MzY4MzEzODB9.7LlOz4yR0no9wOGVOz69R8Sm-hBdGOGzuEm3b1Vs3gNqP3dHjje6voXzqlH5HGVAHzIEiPPzFhBFSjtk2Nau0Q",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8081/api/v1/reactive/video/sync/357991ff-e8f9-4b2b-abb2-5ec87d531346",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"reactive",
+								"video",
+								"sync",
+								"357991ff-e8f9-4b2b-abb2-5ec87d531346"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Async Get Video Stream By Id Copy",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM2NDQxNjY0fQ.Z9ucxmcQ5pkHWaWkkpZPk7ABMqOed2Z37VXGgIN9Hac0IODTB72UV3RrJLerYilbIhAkU3pRE6gHnUA9RmZ9KA",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMiIsImV4cCI6MTczNjQ0MTg5MX0.r0jJQ6QRiXKoNzbOj6mQst6my8_pdaU6hwNSVywdUtl3B6pkFu_ua6yDqzqmDu6Yx-8ZPPce-ah-4jiRPnx2Pw",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxNSIsImV4cCI6MTczNjczMTYxMn0.2GPxpd57lUZ3Pp7uQ7wJTji2XFL8f-MvVf0YtPHTZBvsK6yNWzvnLPpIlYnyI0oI0q55SDrWoKDdR6im3G-xeA",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMzMxMjIyMjIiLCJleHAiOjE3MzY4MzEzODB9.7LlOz4yR0no9wOGVOz69R8Sm-hBdGOGzuEm3b1Vs3gNqP3dHjje6voXzqlH5HGVAHzIEiPPzFhBFSjtk2Nau0Q",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8081/api/v1/reactive/video/async/357991ff-e8f9-4b2b-abb2-5ec87d531346",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"reactive",
+								"video",
+								"async",
+								"357991ff-e8f9-4b2b-abb2-5ec87d531346"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
