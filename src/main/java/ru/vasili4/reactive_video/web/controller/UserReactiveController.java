@@ -18,7 +18,7 @@ import ru.vasili4.reactive_video.web.dto.request.UserRequestDto;
 @Tag(name = "api-user-controller", description = "Пользователи")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/reactive-user")
+@RequestMapping("/api/v1/reactive/user")
 public class UserReactiveController {
 
     private final UserService userService;

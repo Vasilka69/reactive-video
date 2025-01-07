@@ -33,7 +33,7 @@ public class FileServiceImpl implements FileService {
 
     private final DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
 
-    @Value("${file.async-load-chunk-size}")
+    @Value("${file.async-load-chunk-size:#{1024 * 1024}}")
     private long asyncLoadChunkSize;
 
     private final FileReactiveRepository fileReactiveRepository;

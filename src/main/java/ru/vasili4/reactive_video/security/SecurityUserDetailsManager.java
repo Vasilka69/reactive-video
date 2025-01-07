@@ -28,6 +28,11 @@ public class SecurityUserDetailsManager implements ReactiveUserDetailsService {
                                 .map(userHasFile -> new SimpleGrantedAuthority(userHasFile.getId().getFileId()))
                                 .collectList()
                 )
-                .map(tuple -> new SecurityUser(tuple.getT1(), tuple.getT1().getLogin(), tuple.getT1().getPassword(), tuple.getT2()));
+                .map(tuple -> new SecurityUser(
+                        tuple.getT1(),
+                        tuple.getT1().getLogin(),
+                        tuple.getT1().getPassword(),
+                        tuple.getT2()
+                ));
     }
 }

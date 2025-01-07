@@ -3,7 +3,6 @@ package ru.vasili4.reactive_video.data.repository.s3.impl;
 import io.minio.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.compress.utils.IOUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -24,8 +23,6 @@ import java.io.InputStream;
 @Repository
 public class MinioS3FileRepository implements S3FileRepository {
 
-    @Value("${file.async-load-chunk-size}")
-    private long asyncLoadChunkSize;
     private final DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
 
     private final MinioClient minioClient;

@@ -40,9 +40,9 @@ public class SecurityConfig {
                 .httpBasic((httpBasicSpec) -> {})
                 .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec
                         .pathMatchers(getSwaggerPatterns()).permitAll()
-                        .pathMatchers(HttpMethod.POST, "/api/v1/reactive-user/register").permitAll()
+                        .pathMatchers(HttpMethod.POST, "/api/v1/reactive/user/register").permitAll()
                         .anyExchange().authenticated())
-                .addFilterAt(new JWTLoginFilter(HttpMethod.POST, "/login", authenticationManager, serverCodecConfigurer), SecurityWebFiltersOrder.AUTHENTICATION)
+                .addFilterAt(new JWTLoginFilter(HttpMethod.POST, "/api/v1/reactive/user/login", authenticationManager, serverCodecConfigurer), SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAt(new AuthenticationFilter(jwtAuthenticationManager), SecurityWebFiltersOrder.AUTHENTICATION);
 
         return http.build();

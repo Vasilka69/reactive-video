@@ -13,5 +13,4 @@ public class BaseReactiveVideoException extends RuntimeException {
     public BaseReactiveVideoException(String message, Exception cause) {
         super(message, cause);
     }
-
 }

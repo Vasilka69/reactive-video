@@ -11,7 +11,6 @@ import ru.vasili4.reactive_video.security.converters.BodyAuthenticationConverter
 
 public class JWTLoginFilter extends AuthenticationWebFilter {
 
-
     public JWTLoginFilter(HttpMethod method,
                           String url,
                           ReactiveAuthenticationManager authenticationManager,
