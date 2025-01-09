@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.FileDocument;
-import ru.vasili4.reactive_video.data.model.s3.S3File;
+import ru.vasili4.reactive_video.data.model.s3.S3FileLocation;
 import ru.vasili4.reactive_video.data.repository.reactive.FileReactiveRepository;
 import ru.vasili4.reactive_video.data.repository.s3.S3FileRepository;
 import ru.vasili4.reactive_video.exception.EntityValidationException;
@@ -21,7 +21,6 @@ public class FileValidator {
 
     public Mono<Void> validateBeforeCreate(FileDocument fileDocument) {
         return validateFileId(fileDocument)
-                .then(validateBucket(fileDocument))
                 .then(validateFilePath(fileDocument))
                 .then(validateFileNotExists(fileDocument))
                 .then();
@@ -71,7 +70,7 @@ public class FileValidator {
 
         return fileReactiveRepository.findByBucketAndFilePath(fileDocument.getBucket(), fileDocument.getFilePath())
                 .flatMap(foundDocument -> Mono.error(entityValidationException))
-                .then(Mono.just(s3FileRepository.isFileExists(S3File.of(fileDocument))))
+                .then(Mono.just(s3FileRepository.isFileExists(new S3FileLocation(fileDocument))))
                 .flatMap(isFileExists -> {
                     if (isFileExists)
                         return Mono.error(entityValidationException);
@@ -87,7 +86,7 @@ public class FileValidator {
 
         return fileReactiveRepository.findByBucketAndFilePath(fileDocument.getBucket(), fileDocument.getFilePath())
                 .switchIfEmpty(Mono.error(entityValidationException))
-                .then(Mono.just(s3FileRepository.isFileExists(S3File.of(fileDocument))))
+                .then(Mono.just(s3FileRepository.isFileExists(new S3FileLocation(fileDocument))))
                 .flatMap(isFileExists -> {
                     if (!isFileExists)
                         return Mono.error(entityValidationException);
@@ -99,7 +98,7 @@ public class FileValidator {
         return fileReactiveRepository.findById(id)
                 .switchIfEmpty(Mono.error(EntityValidationException.of(FileDocument.ENTITY_TYPE,
                         String.format("Файл с id = %s не существует", id))))
-                .flatMap(fileDocument -> Mono.just(s3FileRepository.isFileExists(S3File.of(fileDocument))))
+                .flatMap(fileDocument -> Mono.just(s3FileRepository.isFileExists(new S3FileLocation(fileDocument))))
                 .flatMap(isFileExists -> {
                     if (!isFileExists)
                         return Mono.error(EntityValidationException.of(FileDocument.ENTITY_TYPE,

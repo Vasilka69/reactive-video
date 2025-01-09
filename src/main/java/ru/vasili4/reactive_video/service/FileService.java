@@ -18,6 +18,6 @@ public interface FileService {
 
     Flux<DataBuffer> asyncGetFullFileContentById(String id);
     Flux<DataBuffer> getFullFileContentById(String id);
-    Mono<Byte[]> blockingGetFullFileContentById(String id);
-    Flux<Byte> blockingGetRangeFileContentById(String id, long offset, long length);
+    Mono<Byte[]> syncGetFullFileContentById(String id);
+    Flux<Byte> syncGetFileByteRangeById(String id, long offset, long length);
 }

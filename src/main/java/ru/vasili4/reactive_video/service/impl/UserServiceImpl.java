@@ -25,18 +25,13 @@ public class UserServiceImpl implements UserService {
                 .flatMap(userDocument -> {
                     if (userDocument != null)
                         return Mono.error(new UserAlreadyExistsException("Пользователь с таким логином уже существует"));
-                    return Mono.empty();
+                    return Mono.<UserDocument>empty();
                 })
-                .switchIfEmpty(Mono.just(dto))
-                .cast(UserRequestDto.class)
-                .map(userRequestDto -> {
-                    userRequestDto.setPassword(passwordEncoder.encode(dto.getPassword()));
-                    return userRequestDto;
-                })
-                .flatMap(userRequestDto -> userReactiveRepository.save(new UserDocument(dto)))
+                .switchIfEmpty(Mono.defer(() ->
+                        Mono.just(new UserDocument(dto.getLogin(), passwordEncoder.encode(dto.getPassword())))))
+                .flatMap(userReactiveRepository::save)
                 .doOnSuccess(userDocument -> log.info("Пользователь успешно зарегистрировался: {}", userDocument))
                 .map(UserDocument::getLogin);
-
     }
 
     @Override

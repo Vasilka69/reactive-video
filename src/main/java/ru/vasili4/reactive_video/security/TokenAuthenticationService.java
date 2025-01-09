@@ -45,6 +45,8 @@ public class TokenAuthenticationService {
     }
 
     public static void addAuthentication(ServerHttpResponse response, String username) {
+        if (response == null)
+            return;
         response.getHeaders().set(HEADER_STRING, TOKEN_PREFIX + generateToken(username));
     }
 

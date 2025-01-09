@@ -10,10 +10,10 @@ public class MiniOConfig {
     @Value("${s3.host:http://127.0.0.1:9000}")
     private String host;
 
-    @Value("${s3.access_key}")
+    @Value("${s3.access_key:access_key}")
     private String access_key;
 
-    @Value("${s3.secret_key}")
+    @Value("${s3.secret_key:secret_key}")
     private String secret_key;
 
     @Bean

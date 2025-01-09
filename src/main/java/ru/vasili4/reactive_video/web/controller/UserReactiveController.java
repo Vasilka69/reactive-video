@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,10 +27,11 @@ public class UserReactiveController {
     private final UserValidator userValidator;
 
     @Operation(description = "Регистрация пользователя")
-    @PostMapping("/register")
+    @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<Void>> register(
             @Parameter(description = "Логин и пароль пользователя", required = true) @RequestBody UserRequestDto user) {
         return userValidator.validateBeforeCreate(user).
-                then(userService.register(user).map(id -> ResponseEntity.status(HttpStatus.OK).build()));
+                then(userService.register(user)
+                        .map(id -> ResponseEntity.status(HttpStatus.OK).build()));
     }
 }

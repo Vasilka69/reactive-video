@@ -14,7 +14,6 @@ public class FileMetadataResponseDto {
     @Schema(description = "Путь файла в S3 хранилище")
     private String filePath;
 
-
     public FileMetadataResponseDto(FileDocument fileDocument) {
         this.fileId = fileDocument.getFileId();
         this.bucket = fileDocument.getBucket();

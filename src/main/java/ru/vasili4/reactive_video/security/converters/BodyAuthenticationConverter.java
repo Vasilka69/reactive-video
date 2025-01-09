@@ -39,7 +39,8 @@ public class BodyAuthenticationConverter implements ServerAuthenticationConverte
                     .readMono(this.usernamePasswordType, request, Collections.emptyMap())
                     .cast(UserRequestDto.class)
                     .map(o -> new UsernamePasswordAuthenticationToken(o.getLogin(), o.getPassword()))
-                    .doOnSuccess(usernamePasswordAuthenticationTokenSignal -> TokenAuthenticationService.addAuthentication(response, usernamePasswordAuthenticationTokenSignal.getName()))
+                    .doOnSuccess(usernamePasswordAuthenticationTokenSignal ->
+                            TokenAuthenticationService.addAuthentication(response, usernamePasswordAuthenticationTokenSignal.getName()))
                     .cast(Authentication.class);
         }
         else {

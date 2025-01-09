@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,14 +27,14 @@ public class FileMetadataReactiveController {
     private final FileService fileService;
 
     @Operation(description = "Получение списка метаданных файлов пользователя")
-    @GetMapping
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Flux<FileMetadataResponseDto> getAll(Principal principal) {
         return fileService.getAllMetadataByUserLogin(principal.getName())
                 .map(FileMetadataResponseDto::new);
     }
 
     @Operation(description = "Получение метаданных файла по ID")
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasPermission('file', #id)")
     public Mono<ResponseEntity<FileMetadataResponseDto>> getById(
             @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id) {

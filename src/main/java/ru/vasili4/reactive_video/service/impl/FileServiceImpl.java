@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.FileDocument;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.UserHasFileDocument;
 import ru.vasili4.reactive_video.data.model.s3.S3File;
+import ru.vasili4.reactive_video.data.model.s3.S3FileLocation;
 import ru.vasili4.reactive_video.data.repository.reactive.FileReactiveRepository;
 import ru.vasili4.reactive_video.data.repository.reactive.UserHasFileReactiveRepository;
 import ru.vasili4.reactive_video.data.repository.s3.S3FileRepository;
@@ -51,8 +52,8 @@ public class FileServiceImpl implements FileService {
     @Override
     public Mono<S3File> getS3FileWithoutContentById(String id) {
         return getFileMetadataById(id)
-                .map(S3File::new)
-                .map(s3FileRepository::getFullFileWithoutContent);
+                .map(S3FileLocation::new)
+                .map(s3FileRepository::getFileWithInfo);
     }
 
     @Override
@@ -60,17 +61,20 @@ public class FileServiceImpl implements FileService {
     public Mono<String> create(FileDocument file, Mono<FilePart> filePartMono, String login) {
         return fileValidator.validateBeforeCreate(file)
                 .then(fileReactiveRepository.save(file)
-                        .flatMap(fileEntity ->
-                                filePartMono.flatMap(filePart ->
-                                        CustomDataBufferUtils.join(filePart.content())
-                                                .map(dataBuffer -> {
-                                                    s3FileRepository.uploadFile(new S3File(
-                                                            fileEntity,
-                                                            CustomDataBufferUtils.readAllBytesArray(dataBuffer)
-                                                    ));
-                                                    return fileEntity;
-                                                })
-                                )
+                        .flatMap(fileEntity -> {
+                                    if (!s3FileRepository.isBucketExists(fileEntity.getBucket()))
+                                        s3FileRepository.createBucket(fileEntity.getBucket());
+                                    return filePartMono.flatMap(filePart ->
+                                            CustomDataBufferUtils.join(filePart.content())
+                                                    .map(dataBuffer -> {
+                                                        s3FileRepository.uploadFile(new S3File(
+                                                                new S3FileLocation(fileEntity),
+                                                                CustomDataBufferUtils.readAllBytesArray(dataBuffer)
+                                                        ));
+                                                        return fileEntity;
+                                                    })
+                                    );
+                                }
                         )
                         .flatMap(fileEntity -> userHasFileReactiveRepository.save(
                                         new UserHasFileDocument(
@@ -93,7 +97,7 @@ public class FileServiceImpl implements FileService {
                                         CustomDataBufferUtils.join(filePart.content())
                                                 .map(dataBuffer -> {
                                                     s3FileRepository.uploadFile(new S3File(
-                                                            fileEntity,
+                                                            new S3FileLocation(fileEntity),
                                                             CustomDataBufferUtils.readAllBytesArray(dataBuffer)
                                                     ));
                                                     return fileEntity;
@@ -107,7 +111,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public Mono<Void> deleteById(String id) {
         return getFileMetadataById(id)
-                .doOnSuccess(fileDocument -> s3FileRepository.deleteFile(S3File.of(fileDocument)))
+                .doOnSuccess(fileDocument -> s3FileRepository.deleteFile(new S3FileLocation(fileDocument)))
                 .doOnSuccess(fileDocument -> fileReactiveRepository.deleteById(id).subscribe())
                 .doOnSuccess(fileDocument -> userHasFileReactiveRepository.deleteByIdFileId(id).subscribe())
                 .doOnSuccess(fileDocument -> log.info("Файл с ID = {} был успешно удален", id))
@@ -133,7 +137,8 @@ public class FileServiceImpl implements FileService {
                             } else {
                                 try {
                                     sink.next(CustomDataBufferUtils.join(
-                                            s3FileRepository.asyncGetFileContentByRange(s3File, currIndex, asyncLoadChunkSize)
+                                            s3FileRepository.asyncGetFileBytesByRange(s3File.getS3FileLocation(),
+                                                    currIndex, asyncLoadChunkSize)
                                     ).toFuture().get());
                                 } catch (Exception e) {
                                     throw new BaseReactiveVideoException("При загрузке файла произошла ошибка: ", e);
@@ -150,7 +155,8 @@ public class FileServiceImpl implements FileService {
                 .flux()
                 .flatMap(s3File -> Flux.generate(() -> new AtomicLong(0L), (state, sink) -> {
                             long currIndex = state.getAndAdd(asyncLoadChunkSize);
-                            byte[] chunk = s3FileRepository.safeGetFileContentByRange(s3File, currIndex, asyncLoadChunkSize);
+                            byte[] chunk = s3FileRepository.safeGetFileBytesByRange(s3File.getS3FileLocation(),
+                                    currIndex, asyncLoadChunkSize);
                             if (chunk.length == 0) {
                                 sink.complete();
                             } else {
@@ -162,16 +168,17 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Mono<Byte[]> blockingGetFullFileContentById(String id) {
+    public Mono<Byte[]> syncGetFullFileContentById(String id) {
         return getFileMetadataById(id)
-                .map(fileDocument -> s3FileRepository.getFullFileWithoutContent(new S3File(fileDocument)))
+                .map(fileDocument -> s3FileRepository.getFullFile(new S3FileLocation(fileDocument)))
                 .map(s3File -> ByteArrayUtils.primitiveArrayToObjectArray(s3File.getContent()));
     }
 
     @Override
-    public Flux<Byte> blockingGetRangeFileContentById(String id, long offset, long length) {
+    public Flux<Byte> syncGetFileByteRangeById(String id, long offset, long length) {
         return getFileMetadataById(id)
-                .map(fileDocument -> s3FileRepository.safeGetFileContentByRange(new S3File(fileDocument), offset, length))
+                .map(fileDocument -> s3FileRepository.safeGetFileBytesByRange(new S3FileLocation(fileDocument),
+                        offset, length))
                 .map(ByteArrayUtils::primitiveArrayToObjectArray)
                 .flux()
                 .flatMap(Flux::fromArray);
