@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.compress.utils.FileNameUtils;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.vasili4.reactive_video.exception.ResourceIllegalArgumentException;
 import ru.vasili4.reactive_video.service.FileService;
 import ru.vasili4.reactive_video.utils.ByteArrayUtils;
 
@@ -32,6 +34,12 @@ public class VideoReactiveController {
             @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id
     ) {
         return fileService.getFileMetadataById(id)
+                .flatMap(fileDocument -> {
+                    if (!FileNameUtils.getExtension(fileDocument.getFilePath()).equals("mp4")) {
+                        return Mono.error((getFileIsNotMp4Exception()));
+                    }
+                    return Mono.just(fileDocument);
+                })
                 .then(fileService.syncGetFullFileContentById(id)
                         .map(bytes -> new ByteArrayResource(ByteArrayUtils.objectArrayToPrimitiveArray(bytes))));
     }
@@ -41,6 +49,17 @@ public class VideoReactiveController {
     @PreAuthorize("hasPermission('file', #id)")
     public Flux<DataBuffer> asyncGetVideoStreamById(
             @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id) {
-        return fileService.asyncGetFullFileContentById(id);
+        return fileService.getFileMetadataById(id)
+                .flatMap(fileDocument -> {
+                    if (!FileNameUtils.getExtension(fileDocument.getFilePath()).equals("mp4")) {
+                        return Mono.error(getFileIsNotMp4Exception());
+                    }
+                    return Mono.just(fileDocument);
+                })
+                .thenMany(fileService.asyncGetFullFileContentById(id));
+    }
+
+    private ResourceIllegalArgumentException getFileIsNotMp4Exception() {
+        return new ResourceIllegalArgumentException("Запрашиваемый файл не является видеофайлом расширения .mp4");
     }
 }

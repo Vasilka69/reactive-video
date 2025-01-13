@@ -10,6 +10,12 @@ import ru.vasili4.reactive_video.web.dto.response.ExceptionResponseDto;
 @RestControllerAdvice
 public class ExceptionController {
 
+    @ExceptionHandler(ResourceIllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Mono<ExceptionResponseDto> handleIllegalArgumentException(Exception exception) {
+        return createErrorResponseDtoMono(exception);
+    }
+
     @ExceptionHandler(EntityValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Mono<ExceptionResponseDto> handleEntityValidationException(Exception exception) {

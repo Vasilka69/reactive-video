@@ -3,6 +3,8 @@ spring:
     name: "@project.name@"
     description: "@project.description@"
     version: "@project.version@"
+  profiles:
+    active: "@spring.profiles.active@"
   data:
     mongodb:
       uri: mongodb://localhost:27017/files

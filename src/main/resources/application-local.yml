@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: "@project.name@"
+    description: "@project.description@"
+    version: "@project.version@"
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/files
+  main:
+    web-application-type: reactive
+
+s3:
+  host: "http://127.0.0.1:9000"
+  access_key: "enfb53u7gPFGhmgYGXgw"
+  secret_key: "xP9kqRZ5QmQi4LrF1cQqHnFHa56eW3V3Bf3jvZyn"
+
+file:
+  async-load-chunk-size: "#{1024 * 1024}"
+
+server:
+  port: 8081

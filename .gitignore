@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+devops/minio-data/**
+!devops/minio-data/1.txt
