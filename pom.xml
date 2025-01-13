@@ -17,6 +17,7 @@
 	<description>Ну пора уже было достойный аналог ютуба в России придумать, возьму ношу на себя В-)</description>
 
 	<properties>
+		<spring.profiles.active>default</spring.profiles.active>
 		<java.version>17</java.version>
 		<jjwt.version>0.12.6</jjwt.version>
 		<postgresql.version>42.2.5</postgresql.version>
@@ -132,7 +133,7 @@
 		<profile>
 			<id>local</id>
 			<activation>
-				<activeByDefault>false</activeByDefault>
+				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
 				<spring.profiles.active>local</spring.profiles.active>
