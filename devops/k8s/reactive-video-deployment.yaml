@@ -1,0 +1,169 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reactive-video-deployment
+  labels:
+    app: reactive-video
+spec:
+  selector:
+    matchLabels:
+      app: reactive-video
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: reactive-video
+    spec:
+      containers:
+        - name: reactive-video-app
+          image: reactive-video:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8081
+          env:
+            - name: MONGODB_URI
+              value: mongodb://reactive-video-mongo-service:27017/files
+            - name: S3_HOST
+              value: http://reactive-video-minio-service:9000
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: reactive-video-secret
+                  key: MINIO_ACCESS_KEY
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: reactive-video-secret
+                  key: MINIO_SECRET_KEY
+            - name: FILE_ASYNC_LOAD_CHUNK_SIZE
+              valueFrom:
+                configMapKeyRef:
+                  name: reactive-video-envs
+                  key: FILE_ASYNC_LOAD_CHUNK_SIZE
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: reactive-video-mongo-set
+spec:
+  selector:
+    matchLabels:
+      app: reactive-video-mongo
+  serviceName: reactive-video-mongo
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: reactive-video-mongo
+    spec:
+      containers:
+        - name: reactive-video-mongo-container
+          image: mongo:7
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+      volumes:
+        - name: mongo-data
+          persistentVolumeClaim:
+            claimName: mongo-data-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 200Mi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: reactive-video-minio-set
+spec:
+  selector:
+    matchLabels:
+      app: reactive-video-minio
+  serviceName: reactive-video-minio
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: reactive-video-minio
+    spec:
+      containers:
+        - name: reactive-video-minio-container
+          image: quay.io/minio/minio
+          args:
+            - server
+            - /data
+            - --console-address
+            - :9001
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
+          env:
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: reactive-video-secret
+                  key: MINIO_ACCESS_KEY
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: reactive-video-secret
+                  key: MINIO_SECRET_KEY
+          volumeMounts:
+            - name: minio-data
+              mountPath: /data
+      volumes:
+        - name: minio-data
+          persistentVolumeClaim:
+            claimName: minio-data-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: minio-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2G
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reactive-video-mongo-service
+spec:
+  clusterIP: None
+  selector:
+    app: reactive-video-mongo
+  ports:
+    - port: 27017
+      targetPort: 27017
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reactive-video-minio-service
+spec:
+  clusterIP: None
+  selector:
+    app: reactive-video-minio
+  ports:
+    - port: 9000
+      targetPort: 9000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reactive-video-app-service
+spec:
+  type: NodePort
+  selector:
+    app: reactive-video
+  ports:
+    - port: 8081
+      targetPort: 8081

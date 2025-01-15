@@ -8,5 +8,12 @@ docker run --name reactive-video -p 8081:8081 -e MONGODB_URI=mongodb://host.dock
 
 ### Запуск сервиса и его инфраструктуры в docker compose:
 ```
-docker compose -f devops/docker-compose.yaml -p reactive-video up
+docker compose -f devops/docker-compose.yaml -p reactive-video up -d
+```
+
+### Запуск сервиса и его инфраструктуры в kubernetes:
+```
+kubectl apply -f devops/k8s/reactive-video-secret.yaml
+kubectl apply -f devops/k8s/reactive-video-envs.yaml
+kubectl apply -f devops/k8s/reactive-video-deployment.yaml
 ```
