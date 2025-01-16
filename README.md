@@ -17,3 +17,5 @@ kubectl apply -f devops/k8s/reactive-video-secret.yaml
 kubectl apply -f devops/k8s/reactive-video-envs.yaml
 kubectl apply -f devops/k8s/reactive-video-deployment.yaml
 ```
+
+Для тестирования работы сервиса можно воспользоваться коллекцией Postman и файлами с примерами в директории /etc
