@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.compress.utils.FileNameUtils;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -18,13 +17,13 @@ import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.exception.ResourceIllegalArgumentException;
 import ru.vasili4.reactive_video.service.FileService;
 import ru.vasili4.reactive_video.utils.ByteArrayUtils;
+import ru.vasili4.reactive_video.utils.FileUtils;
 
 @Tag(name = "api-video-controller", description = "Видео")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/reactive/video")
 public class VideoReactiveController {
-
     private final FileService fileService;
 
     @Operation(description = "Синхронное получение видеопотока по ID")
@@ -35,7 +34,7 @@ public class VideoReactiveController {
     ) {
         return fileService.getFileMetadataById(id)
                 .flatMap(fileDocument -> {
-                    if (!FileNameUtils.getExtension(fileDocument.getFilePath()).equals("mp4")) {
+                    if (!FileUtils.isVideoFile(fileDocument.getFilePath())) {
                         return Mono.error((getFileIsNotMp4Exception()));
                     }
                     return Mono.just(fileDocument);
@@ -51,7 +50,7 @@ public class VideoReactiveController {
             @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id) {
         return fileService.getFileMetadataById(id)
                 .flatMap(fileDocument -> {
-                    if (!FileNameUtils.getExtension(fileDocument.getFilePath()).equals("mp4")) {
+                    if (!FileUtils.isVideoFile(fileDocument.getFilePath())) {
                         return Mono.error(getFileIsNotMp4Exception());
                     }
                     return Mono.just(fileDocument);

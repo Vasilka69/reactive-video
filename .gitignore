@@ -32,5 +32,6 @@ build/
 ### VS Code ###
 .vscode/
 
+src/main/resources/application-dev.yml
 devops/minio-data/**
 !devops/minio-data/1.txt

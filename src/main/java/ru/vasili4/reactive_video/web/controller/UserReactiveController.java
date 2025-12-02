@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.service.UserService;
 import ru.vasili4.reactive_video.service.validators.UserValidator;
 import ru.vasili4.reactive_video.web.dto.request.UserRequestDto;
+import ru.vasili4.reactive_video.web.dto.response.UserResponseDto;
 
 @Tag(name = "api-user-controller", description = "Пользователи")
 @RequiredArgsConstructor
@@ -23,7 +25,6 @@ import ru.vasili4.reactive_video.web.dto.request.UserRequestDto;
 public class UserReactiveController {
 
     private final UserService userService;
-
     private final UserValidator userValidator;
 
     @Operation(description = "Регистрация пользователя")
@@ -33,5 +34,13 @@ public class UserReactiveController {
         return userValidator.validateBeforeCreate(user).
                 then(userService.register(user)
                         .map(id -> ResponseEntity.status(HttpStatus.OK).build()));
+    }
+
+    @Operation(description = "Получение информации о пользователе по его токену")
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<UserResponseDto>> getUserByToken() {
+        return userService.getUserByToken()
+                .map(UserResponseDto::new)
+                .map(user -> ResponseEntity.ok().body(user));
     }
 }

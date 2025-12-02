@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -13,7 +14,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.FileDocument;
@@ -23,6 +31,7 @@ import ru.vasili4.reactive_video.utils.HttpUtils;
 
 import java.nio.file.Paths;
 import java.security.Principal;
+import java.time.Instant;
 import java.util.UUID;
 
 @Tag(name = "api-file-controller", description = "Файлы")
@@ -38,18 +47,15 @@ public class FileReactiveController {
     public Mono<ResponseEntity<String>> create(
             Principal principal,
             @Parameter(description = "Bucket S3 хранилища для файла", required = true) @RequestPart("bucket") String bucket,
-            @Parameter(description = "Путь файла в S3 хранилище", required = true) @RequestPart("filePath") String filePath,
+            @Parameter(description = "Путь файла в S3 хранилище") @RequestPart(value = "filePath", required = false) String filePath,
             @Parameter(description = "Файл", required = true) @RequestPart("file") Mono<FilePart> filePart) {
         return filePart.flatMap(file ->
                         fileService.create(
                                 new FileDocument(
                                         UUID.randomUUID().toString(),
                                         bucket,
-                                        String.format(
-                                                "%s/%s",
-                                                Paths.get(filePath).toString().replace("\\", "/"),
-                                                file.filename()
-                                        )
+                                        getS3FilePath(filePath, file),
+                                        Instant.now()
                                 ),
                                 filePart,
                                 principal.getName()))
@@ -104,5 +110,16 @@ public class FileReactiveController {
                         HttpUtils.getContentDispositionHeaderByPath(fileDocument.getFilePath())
                 ))
                 .thenMany(fileService.asyncGetFullFileContentById(id));
+    }
+
+    private static String getS3FilePath(String filePath, FilePart file) {
+        if (StringUtils.isEmpty(filePath)) {
+            return file.filename();
+        }
+        return String.format(
+                "%s/%s",
+                Paths.get(filePath).toString().replace("\\", "/"),
+                file.filename()
+        );
     }
 }

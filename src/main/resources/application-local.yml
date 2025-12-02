@@ -11,8 +11,19 @@ spring:
 
 s3:
   host: "http://127.0.0.1:9000"
-  access_key: "enfb53u7gPFGhmgYGXgw"
-  secret_key: "xP9kqRZ5QmQi4LrF1cQqHnFHa56eW3V3Bf3jvZyn"
+  access-key: "access-key"
+  secret-key: "secret-key"
+
+vk:
+  oauth:
+    endpoint: "https://mcs.mail.ru/auth/oauth/v1/token"
+    client-id: "client-id"
+    refresh-token: "refresh-token"
+    provider: "mcs"
+  vision:
+    host: "https://smarty.mail.ru"
+    endpoint:
+      detect: "/api/v1/objects/detect"
 
 file:
   async-load-chunk-size: "#{1024 * 1024}"

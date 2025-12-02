@@ -17,16 +17,22 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import ru.vasili4.reactive_video.security.DefaultPermissionEvaluator;
 import ru.vasili4.reactive_video.security.JwtAuthenticationManager;
 import ru.vasili4.reactive_video.security.filters.AuthenticationFilter;
 import ru.vasili4.reactive_video.security.filters.JWTLoginFilter;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 public class SecurityConfig {
-
+  // todo нужен рефакторинг
     private final ReactiveUserDetailsService userDetailsService;
 
     @Bean
@@ -35,13 +41,16 @@ public class SecurityConfig {
                                                       ReactiveAuthenticationManager authenticationManager,
                                                       JwtAuthenticationManager jwtAuthenticationManager) {
         http
+//                .cors(ServerHttpSecurity.CorsSpec::disable)
+                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsWebFilterSource()))
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .cors(ServerHttpSecurity.CorsSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)
                 .httpBasic(Customizer.withDefaults())
                 .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec
                         .pathMatchers(getSwaggerPatterns()).permitAll()
-                        .pathMatchers(HttpMethod.POST, "/api/v1/reactive/user/register").permitAll()
+                        .pathMatchers("/api/v1/reactive/user/register").permitAll()
+                        .pathMatchers("/api/v1/reactive/user/login").permitAll()
                         .anyExchange().authenticated())
                 .addFilterAt(new JWTLoginFilter(HttpMethod.POST, "/api/v1/reactive/user/login", authenticationManager, serverCodecConfigurer), SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAt(new AuthenticationFilter(jwtAuthenticationManager), SecurityWebFiltersOrder.AUTHENTICATION);
@@ -68,6 +77,36 @@ public class SecurityConfig {
         methodSecurityExpressionHandler.setPermissionEvaluator(defaultPermissionEvaluator);
 
         return defaultPermissionEvaluator;
+    }
+
+    @Bean
+    public CorsWebFilter corsWebFilter() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("Authorization"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return new CorsWebFilter(source);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsWebFilterSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("Authorization"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return source;
     }
 
     private String[] getSwaggerPatterns() {

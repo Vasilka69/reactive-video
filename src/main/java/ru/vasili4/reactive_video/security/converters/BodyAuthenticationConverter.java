@@ -42,8 +42,7 @@ public class BodyAuthenticationConverter implements ServerAuthenticationConverte
                     .doOnSuccess(usernamePasswordAuthenticationTokenSignal ->
                             TokenAuthenticationService.addAuthentication(response, usernamePasswordAuthenticationTokenSignal.getName()))
                     .cast(Authentication.class);
-        }
-        else {
+        } else {
             return Mono.empty();
         }
     }

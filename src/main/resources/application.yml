@@ -7,17 +7,29 @@ spring:
     active: "@spring.profiles.active@"
   data:
     mongodb:
-      uri: mongodb://localhost:27017/files
+      uri: ${MONGODB_URI}
   main:
     web-application-type: reactive
 
 s3:
-  host: "http://127.0.0.1:9000"
-  access_key: "ObqQJsbLKk22VWYMyyQS"
-  secret_key: "gO0ZOI52F0SncUn3EySmsSegxPeRBMckfrpHhy4A"
+  host: ${S3_HOST}
+  access-key: ${S3_ACCESS_KEY}
+  secret-key: ${S3_SECRET_KEY}
+
+vk:
+  oauth:
+    endpoint: ${VK_OAUTH_ENDPOINT}
+    client-id: ${VK_OAUTH_CLIENT_ID}
+    refresh-token: ${VK_OAUTH_REFRESH_TOKEN}
+    provider: ${VK_OAUTH_PROVIDER}
+  vision:
+    host: ${VK_VISION_HOST}
+    endpoint:
+      detect: ${VK_VISION_DETECT_ENDPOINT}
+    detect-mode: ${VK_VISION_DETECT_MODE:multiobject}
 
 file:
-  async-load-chunk-size: "#{1024 * 1024}"
+  async-load-chunk-size: ${FILE_ASYNC_LOAD_CHUNK_SIZE}
 
 server:
-  port: 8081
+  port: ${SERVER_PORT}

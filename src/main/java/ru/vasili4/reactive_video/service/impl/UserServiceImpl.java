@@ -2,12 +2,16 @@ package ru.vasili4.reactive_video.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.UserDocument;
 import ru.vasili4.reactive_video.data.repository.reactive.UserReactiveRepository;
 import ru.vasili4.reactive_video.exception.UserAlreadyExistsException;
+import ru.vasili4.reactive_video.security.SecurityUser;
 import ru.vasili4.reactive_video.service.UserService;
 import ru.vasili4.reactive_video.web.dto.request.UserRequestDto;
 
@@ -37,5 +41,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<UserDocument> findByLogin(String login) {
         return userReactiveRepository.findById(login);
+    }
+
+    @Override
+    public Mono<UserDocument> getUserByToken() {
+        return ReactiveSecurityContextHolder.getContext()
+                .map(SecurityContext::getAuthentication)
+                .map(Authentication::getPrincipal)
+                .cast(SecurityUser.class)
+                .map(SecurityUser::getUser);
     }
 }

@@ -7,10 +7,6 @@ import ru.vasili4.reactive_video.data.model.s3.S3FileInfo;
 import ru.vasili4.reactive_video.data.model.s3.S3FileLocation;
 
 public interface S3FileRepository {
-    void createBucket(String bucketName);
-    void deleteBucket(String bucketName);
-    boolean isBucketExists(String bucketName);
-
     boolean isFileExists(S3FileLocation location);
     void uploadFile(S3File file);
     void deleteFile(S3FileLocation location);

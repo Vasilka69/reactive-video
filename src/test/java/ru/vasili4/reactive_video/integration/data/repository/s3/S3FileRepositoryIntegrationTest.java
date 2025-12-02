@@ -11,6 +11,7 @@ import ru.vasili4.reactive_video.config.TestConfig;
 import ru.vasili4.reactive_video.data.model.s3.S3File;
 import ru.vasili4.reactive_video.data.model.s3.S3FileInfo;
 import ru.vasili4.reactive_video.data.model.s3.S3FileLocation;
+import ru.vasili4.reactive_video.data.repository.s3.S3BucketRepository;
 import ru.vasili4.reactive_video.data.repository.s3.S3FileRepository;
 
 import java.util.List;
@@ -19,11 +20,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Import(TestConfig.class)
 @SpringBootTest
-@DisplayName("Интеграционные тесты S3 репозитория")
+@DisplayName("Интеграционные тесты S3 файлового репозитория")
 public class S3FileRepositoryIntegrationTest {
 
     @Autowired
     private S3FileRepository s3FileRepository;
+
+    @Autowired
+    private S3BucketRepository s3BucketRepository;
 
     private final String bucketName = "test-bucket";
 
@@ -37,7 +41,7 @@ public class S3FileRepositoryIntegrationTest {
                 new S3File(new S3FileLocation(bucketName, "2/2.txt"), new S3FileInfo((long) "Content_3".getBytes().length), "Content_3".getBytes())
         );
 
-        s3FileRepository.createBucket(bucketName);
+        s3BucketRepository.createBucket(bucketName);
         for (S3File s3File:
                 initFiles) {
             s3FileRepository.uploadFile(s3File);
@@ -53,18 +57,9 @@ public class S3FileRepositoryIntegrationTest {
             assertFalse(isFileExists);
         }
 
-        s3FileRepository.deleteBucket(bucketName);
-        boolean isBucketExists = s3FileRepository.isBucketExists(bucketName);
+        s3BucketRepository.deleteBucket(bucketName);
+        boolean isBucketExists = s3BucketRepository.isBucketExists(bucketName);
         assertFalse(isBucketExists);
-    }
-
-    @Test
-    @DisplayName("Проверка наличия существующего bucket")
-    void isBucketExists_BucketExists_ReturnsTrue() {
-        // when
-        boolean isBucketExists = s3FileRepository.isBucketExists(bucketName);
-        // then
-        assertTrue(isBucketExists);
     }
 
     @Test

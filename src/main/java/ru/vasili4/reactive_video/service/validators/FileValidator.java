@@ -6,6 +6,7 @@ import reactor.core.publisher.Mono;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.FileDocument;
 import ru.vasili4.reactive_video.data.model.s3.S3FileLocation;
 import ru.vasili4.reactive_video.data.repository.reactive.FileReactiveRepository;
+import ru.vasili4.reactive_video.data.repository.s3.S3BucketRepository;
 import ru.vasili4.reactive_video.data.repository.s3.S3FileRepository;
 import ru.vasili4.reactive_video.exception.EntityValidationException;
 
@@ -18,6 +19,7 @@ public class FileValidator {
 
     private final FileReactiveRepository fileReactiveRepository;
     private final S3FileRepository s3FileRepository;
+    private final S3BucketRepository s3BucketRepository;
 
     public Mono<Void> validateBeforeCreate(FileDocument fileDocument) {
         return validateFileId(fileDocument)
@@ -45,7 +47,7 @@ public class FileValidator {
     }
 
     private Mono<Void> validateBucket(FileDocument fileDocument) {
-        return Mono.just(s3FileRepository.isBucketExists(fileDocument.getBucket()))
+        return Mono.just(s3BucketRepository.isBucketExists(fileDocument.getBucket()))
                 .flatMap(isBucketExists -> {
                     if (!isBucketExists)
                         return Mono.error(EntityValidationException.of(

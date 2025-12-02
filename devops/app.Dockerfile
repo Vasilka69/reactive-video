@@ -8,7 +8,7 @@ FROM bellsoft/liberica-openjdk-debian:17
 WORKDIR opt/app
 
 COPY --from=builder /opt/app/target/reactive-video-1.0.jar .
-COPY --from=builder /opt/app/target/classes/application-docker.yml application.yml
+COPY --from=builder /opt/app/target/classes/application.yml application.yml
 COPY --from=builder /opt/app/target/dependency ./libs
 
 ENV SERVER_PORT=8081

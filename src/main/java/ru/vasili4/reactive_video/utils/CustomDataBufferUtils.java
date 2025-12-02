@@ -1,8 +1,11 @@
 package ru.vasili4.reactive_video.utils;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CustomDataBufferUtils extends DataBufferUtils {
 
     public static byte[] readAllBytesArray(DataBuffer dataBuffer) {
