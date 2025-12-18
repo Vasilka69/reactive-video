@@ -4,8 +4,9 @@ export const getFileUrl = (file) => {
 
 export const getFileType = (file) => {
     const ext = file.filePath.split(".").pop().toLowerCase();
-    if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext))
-        return "image";
-    if (["mp4", "mov", "avi", "webm", "mkv"].includes(ext)) return "video";
+    if (["png", "jpg", "jpeg"].includes(ext)) return "image";
+    if (["gif"].includes(ext)) return "gif";
+    if (["mp4"].includes(ext)) return "video";
+    if (["txt"].includes(ext)) return "text";
     return "other";
 };

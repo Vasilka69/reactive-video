@@ -1,18 +1,36 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
+import axios from "axios";
 import {Button, Card, message, Space, Spin} from "antd";
 import {useFileBlob} from "../../hooks/useFileBlob";
 import {cachedRecognizeImage, recognizeImage,} from "../../api/imageRecognition";
+import {cachedTextToSpeech, textToSpeech,} from "../../api/textToSpeech";
 import ImageRecognitionModal from "./ImageRecognitionModal";
 import FilePreviewModal from "./FilePreviewModal";
+import TextToSpeechModal from "./TextToSpeechModal";
 
 export default function FileCard({ file, onDelete }) {
     const { blobUrl, loading } = useFileBlob(file.fileId);
     const [modalVisible, setModalVisible] = useState(false);
     const [previewVisible, setPreviewVisible] = useState(false);
     const [recognitionResult, setRecognitionResult] = useState(null);
+    const [textModalVisible, setTextModalVisible] = useState(false);
+    const [textContent, setTextContent] = useState("");
+    const [textLoading, setTextLoading] = useState(false);
+    const [ttsAudioUrl, setTtsAudioUrl] = useState(null);
+    const [ttsLoading, setTtsLoading] = useState(false);
+    const [recognitionLoading, setRecognitionLoading] = useState(false);
+
+    useEffect(() => {
+        return () => {
+            if (ttsAudioUrl) {
+                URL.revokeObjectURL(ttsAudioUrl);
+            }
+        };
+    }, [ttsAudioUrl]);
 
     const handleMarkImage = async () => {
         try {
+            setRecognitionLoading(true);
             message.loading({ content: "Распознавание...", key: "recog" });
             const result = await recognizeImage(file.fileId);
             message.success({
@@ -30,11 +48,14 @@ export default function FileCard({ file, onDelete }) {
                     (e?.response?.data?.message || "Неизвестная ошибка"),
                 key: "recog",
             });
+        } finally {
+            setRecognitionLoading(false);
         }
     };
 
     const handleUseCached = async () => {
         try {
+            setRecognitionLoading(true);
             message.loading({
                 content: "Получение кэшированной разметки...",
                 key: "recog",
@@ -55,7 +76,82 @@ export default function FileCard({ file, onDelete }) {
                     (e?.response?.data?.message || "Неизвестная ошибка"),
                 key: "recog",
             });
+        } finally {
+            setRecognitionLoading(false);
         }
+    };
+
+    const openTextModal = async () => {
+        setTextModalVisible(true);
+        setTextLoading(true);
+        setTextContent("");
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.get(
+                `/api/v1/reactive/file/sync/${file.fileId}`,
+                {
+                    headers: { Authorization: token },
+                    responseType: "text",
+                }
+            );
+            setTextContent(res.data);
+        } catch (e) {
+            console.error(e);
+            message.error(
+                "Не удалось загрузить текст: " +
+                    (e?.response?.data?.message || "произошла ошибка")
+            );
+        } finally {
+            setTextLoading(false);
+        }
+    };
+
+    const handleTextToSpeech = async (useCache = false) => {
+        const key = "tts";
+        try {
+            setTextModalVisible(true);
+            setTtsLoading(true);
+            message.loading({
+                content: useCache
+                    ? "Получаем озвучку из кеша..."
+                    : "Готовим озвучку текста...",
+                key,
+            });
+            const audioBlob = useCache
+                ? await cachedTextToSpeech(file.fileId)
+                : await textToSpeech(file.fileId);
+            if (ttsAudioUrl) {
+                URL.revokeObjectURL(ttsAudioUrl);
+            }
+            const url = URL.createObjectURL(audioBlob);
+            setTtsAudioUrl(url);
+            message.success({
+                content: useCache
+                    ? "Озвучка получена из кеша"
+                    : "Озвучка готова",
+                key,
+                duration: 2,
+            });
+        } catch (e) {
+            console.error(e);
+            message.error({
+                content:
+                    "Не удалось озвучить текст: " +
+                    (e?.response?.data?.message || "произошла ошибка"),
+                key,
+            });
+        } finally {
+            setTtsLoading(false);
+        }
+    };
+
+    const handleCloseTextModal = () => {
+        if (ttsAudioUrl) {
+            URL.revokeObjectURL(ttsAudioUrl);
+            setTtsAudioUrl(null);
+        }
+        setTextContent("");
+        setTextModalVisible(false);
     };
 
     const renderPreview = () => {
@@ -77,6 +173,32 @@ export default function FileCard({ file, onDelete }) {
                         style={{ borderRadius: 8 }}
                         muted
                     />
+                );
+            case "gif":
+                return (
+                    <img
+                        src={blobUrl}
+                        alt={file.filePath}
+                        style={{ width: 120, borderRadius: 8 }}
+                    />
+                );
+            case "text":
+                return (
+                    <div
+                        style={{
+                            width: 120,
+                            height: 80,
+                            borderRadius: 8,
+                            background: "#e6f4ff",
+                            color: "#1677ff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: 600,
+                        }}
+                    >
+                        TEXT
+                    </div>
                 );
             default:
                 return (
@@ -116,15 +238,17 @@ export default function FileCard({ file, onDelete }) {
                         <>
                             <Button
                                 type="primary"
+                                loading={recognitionLoading}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     handleMarkImage();
                                 }}
                             >
-                                Разметка изображения
+                                Разметить изображение
                             </Button>
 
                             <Button
+                                loading={recognitionLoading}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     handleUseCached();
@@ -133,6 +257,19 @@ export default function FileCard({ file, onDelete }) {
                                 Использовать кэшированную разметку (при наличии)
                             </Button>
                         </>
+                    )}
+
+                    {file.type === "text" && (
+                        <Button
+                            type="primary"
+                            loading={textLoading}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                openTextModal();
+                            }}
+                        >
+                            Просмотр и озвучка текста
+                        </Button>
                     )}
 
                     <Button
@@ -178,6 +315,18 @@ export default function FileCard({ file, onDelete }) {
                         onClose={() => setModalVisible(false)}
                         result={recognitionResult}
                         imageUrl={blobUrl}
+                    />
+                )}
+                {textModalVisible && (
+                    <TextToSpeechModal
+                        open={textModalVisible}
+                        onClose={handleCloseTextModal}
+                        audioUrl={ttsAudioUrl}
+                        textContent={textContent}
+                        textLoading={textLoading}
+                        onSpeak={() => handleTextToSpeech(false)}
+                        onSpeakCached={() => handleTextToSpeech(true)}
+                        ttsLoading={ttsLoading}
                     />
                 )}
             </div>
