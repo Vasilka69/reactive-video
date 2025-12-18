@@ -8,14 +8,17 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+import ru.vasili4.reactive_video.client.WebClientWrapper;
 import ru.vasili4.reactive_video.client.vk.VkOauthClient;
 import ru.vasili4.reactive_video.client.vk.dto.RefreshTokenRequest;
 import ru.vasili4.reactive_video.client.vk.dto.RefreshTokenResponse;
 import ru.vasili4.reactive_video.exception.VKClientException;
 
-import jakarta.annotation.PostConstruct;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,55 +30,56 @@ public class VkOauthClientImpl implements VkOauthClient {
     @Value("${vk.oauth.endpoint}")
     private String oauthEndpoint;
 
-    @Value("${vk.oauth.client-id}")
-    private String oauthClientId;
+    private final WebClientWrapper webClientWrapper;
 
-    @Value("${vk.oauth.refresh-token}")
-    private String oauthRefreshToken;
+    private final Map<String, String> oauthAccessTokens = new HashMap<>();
 
-    private final WebClient.Builder webClientBuilder;
-    private WebClient webClient;
-
-    private RefreshTokenRequest refreshTokenRequest;
-    private String oauthAccessToken;
-
-    @PostConstruct
-    public void init() {
-        webClient = webClientBuilder.build();
-        refreshTokenRequest = new RefreshTokenRequest(oauthClientId, oauthRefreshToken, REFRESH_TOKEN_GRANT_TYPE);
-        refreshToken();
+    @Override
+    public String getAccessToken(String oauthClientId) {
+        return oauthAccessTokens.get(oauthClientId);
     }
 
     @Override
-    public String getAccessToken() {
-        return oauthAccessToken;
+    public String getAccessToken(String oauthClientId, String oauthRefreshToken) {
+        return oauthAccessTokens.computeIfAbsent(oauthClientId, (String key) -> refreshToken(key, oauthRefreshToken).block());
     }
 
     @SneakyThrows
     @Override
-    public void refreshToken() {
+    public Mono<String> refreshToken(String oauthClientId, String oauthRefreshToken) {
         log.info("Попытка обновления токена");
-        RefreshTokenResponse refreshTokenResponse;
-        while (true) {
-            try {
-                refreshTokenResponse = webClient
-                        .method(HttpMethod.POST)
-                        .uri(oauthEndpoint)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(Mono.just(refreshTokenRequest), new ParameterizedTypeReference<>() {})
-                        .retrieve()
-                        .bodyToMono(new ParameterizedTypeReference<RefreshTokenResponse>() {})
-                        .block();
-                if (refreshTokenResponse == null || refreshTokenResponse.getAccessToken() == null) {
-                    throw new VKClientException("При попытке обновления токена не удалось извлечь токен из ответа: %s".formatted(refreshTokenResponse));
-                }
-                break;
-            } catch (Exception e) {
-                log.error("Ошибка при попытке обновления токена, ожидание 5 секунд: ", e);
-                Thread.sleep(5000L);
-            }
-        }
-        oauthAccessToken = refreshTokenResponse.getAccessToken();
-        log.info("Токен успешно обновлен");
+
+        RefreshTokenRequest request =
+                new RefreshTokenRequest(oauthClientId, oauthRefreshToken, REFRESH_TOKEN_GRANT_TYPE);
+
+        return webClientWrapper.sendRequest(
+                        HttpMethod.POST,
+                        oauthEndpoint,
+                        null,
+                        null,
+                        null,
+                        Mono.just(request),
+                        new ParameterizedTypeReference<>() { },
+                        MediaType.APPLICATION_JSON
+                )
+                .bodyToMono(RefreshTokenResponse.class)
+                .<String>handle((response, sink) -> {
+                    if (response == null || response.getAccessToken() == null) {
+                        sink.error(new VKClientException("Не удалось получить access token из ответа: %s".formatted(response)));
+                        return;
+                    }
+                    sink.next(response.getAccessToken());
+                })
+                .doOnNext(token -> {
+                    oauthAccessTokens.put(oauthClientId, token);
+                    log.info("Токен успешно обновлён");
+                })
+                .retryWhen(
+                        Retry.fixedDelay(5, Duration.ofSeconds(5))
+                                .doBeforeRetry(rs ->
+                                        log.error("Ошибка обновления токена, повтор через 5 сек",
+                                                rs.failure())
+                                )
+                );
     }
 }

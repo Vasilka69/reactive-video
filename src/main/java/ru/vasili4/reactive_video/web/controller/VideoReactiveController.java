@@ -24,10 +24,12 @@ import ru.vasili4.reactive_video.utils.FileUtils;
 @RestController
 @RequestMapping("/api/v1/reactive/video")
 public class VideoReactiveController {
+
+    public static final String VIDEO_MP4_CONTENT_TYPE = "video/mp4";
     private final FileService fileService;
 
     @Operation(description = "Синхронное получение видеопотока по ID")
-    @GetMapping(value = "/sync/{id}", produces = "video/mp4")
+    @GetMapping(value = "/sync/{id}", produces = VIDEO_MP4_CONTENT_TYPE)
     @PreAuthorize("hasPermission('file', #id)")
     public Mono<Resource> syncGetVideoStreamById(
             @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id
@@ -35,7 +37,7 @@ public class VideoReactiveController {
         return fileService.getFileMetadataById(id)
                 .flatMap(fileDocument -> {
                     if (!FileUtils.isVideoFile(fileDocument.getFilePath())) {
-                        return Mono.error((getFileIsNotMp4Exception()));
+                        return Mono.error((getFileIsNotVideoException()));
                     }
                     return Mono.just(fileDocument);
                 })
@@ -44,21 +46,21 @@ public class VideoReactiveController {
     }
 
     @Operation(description = "Асинхронное получение видеопотока по ID")
-    @GetMapping(value = "/async/{id}", produces = "video/mp4")
+    @GetMapping(value = "/async/{id}", produces = VIDEO_MP4_CONTENT_TYPE)
     @PreAuthorize("hasPermission('file', #id)")
     public Flux<DataBuffer> asyncGetVideoStreamById(
             @Parameter(description = "Идентификатор файла", required = true) @PathVariable("id") String id) {
         return fileService.getFileMetadataById(id)
                 .flatMap(fileDocument -> {
                     if (!FileUtils.isVideoFile(fileDocument.getFilePath())) {
-                        return Mono.error(getFileIsNotMp4Exception());
+                        return Mono.error(getFileIsNotVideoException());
                     }
                     return Mono.just(fileDocument);
                 })
                 .thenMany(fileService.asyncGetFullFileContentById(id));
     }
 
-    private ResourceIllegalArgumentException getFileIsNotMp4Exception() {
-        return new ResourceIllegalArgumentException("Запрашиваемый файл не является видеофайлом расширения .mp4");
+    private ResourceIllegalArgumentException getFileIsNotVideoException() {
+        return new ResourceIllegalArgumentException("Запрашиваемый файл не является видеофайлом расширений %s".formatted(FileUtils.VIDEO_EXTENSIONS));
     }
 }

@@ -1,23 +1,24 @@
-package ru.vasili4.reactive_video.client.vk;
+package ru.vasili4.reactive_video.client;
 
 import org.reactivestreams.Publisher;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import reactor.core.publisher.Mono;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Map;
 
 public interface WebClientWrapper {
 
-    <REQ, P extends Publisher<REQ>, RES> Mono<RES> sendRequest(
+    <REQ, P extends Publisher<REQ>> WebClient.ResponseSpec sendRequest(
+            HttpMethod method,
             String url,
             Object[] pathVariables,
             Map<String, ?> queryParams,
-            HttpMethod method,
+            MultiValueMap<String, String> headers,
             P bodyPublisher,
             ParameterizedTypeReference<REQ> requestBodyTypeReference,
-            MediaType requestContentType,
-            ParameterizedTypeReference<RES> responseBodyTypeReference
+            MediaType requestContentType
     );
 }

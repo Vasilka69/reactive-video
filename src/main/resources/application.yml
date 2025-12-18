@@ -19,14 +19,20 @@ s3:
 vk:
   oauth:
     endpoint: ${VK_OAUTH_ENDPOINT}
-    client-id: ${VK_OAUTH_CLIENT_ID}
-    refresh-token: ${VK_OAUTH_REFRESH_TOKEN}
     provider: ${VK_OAUTH_PROVIDER}
   vision:
+    oauth:
+      client-id: ${VK_VISION_OAUTH_CLIENT_ID}
+      refresh-token: ${VK_VISION_OAUTH_REFRESH_TOKEN}
     host: ${VK_VISION_HOST}
     endpoint:
       detect: ${VK_VISION_DETECT_ENDPOINT}
     detect-mode: ${VK_VISION_DETECT_MODE:multiobject}
+  voice:
+    oauth:
+      client-id: ${VK_VOICE_OAUTH_CLIENT_ID}
+      refresh-token: ${VK_VOICE_OAUTH_REFRESH_TOKEN}
+    endpoint: ${VK_VOICE_ENDPOINT}
 
 file:
   async-load-chunk-size: ${FILE_ASYNC_LOAD_CHUNK_SIZE}

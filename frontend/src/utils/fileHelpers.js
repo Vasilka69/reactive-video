@@ -1,5 +1,5 @@
 export const getFileUrl = (file) => {
-    return `http://localhost:8081/api/v1/reactive/file/sync/${file.fileId}`;
+    return `/api/v1/reactive/file/sync/${file.fileId}`;
 };
 
 export const getFileType = (file) => {

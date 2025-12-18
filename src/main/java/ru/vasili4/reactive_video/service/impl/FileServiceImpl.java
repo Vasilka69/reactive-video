@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
@@ -69,12 +70,12 @@ public class FileServiceImpl implements FileService {
     public Mono<String> create(FileDocument file, Mono<FilePart> filePartMono, String login) {
         return fileValidator.validateBeforeCreate(file)
                 .thenReturn(file)
-                .flatMap((fileDocument) -> {
+                .flatMap((FileDocument fileDocument) -> {
                             if (!s3BucketRepository.isBucketExists(file.getBucket()))
                                 s3BucketRepository.createBucket(file.getBucket());
                             return filePartMono
                                     .flatMap(filePart ->
-                                            CustomDataBufferUtils.join(filePart.content())
+                                            DataBufferUtils.join(filePart.content())
                                                     .map(dataBuffer -> {
                                                         s3FileRepository.uploadFile(new S3File(
                                                                 new S3FileLocation(file),
@@ -104,7 +105,7 @@ public class FileServiceImpl implements FileService {
                 .then(getFileMetadataById(id)
                         .flatMap(fileEntity ->
                                 filePartMono.flatMap(filePart ->
-                                        CustomDataBufferUtils.join(filePart.content())
+                                        DataBufferUtils.join(filePart.content())
                                                 .map(dataBuffer -> {
                                                     s3FileRepository.uploadFile(new S3File(
                                                             new S3FileLocation(fileEntity),
@@ -130,6 +131,7 @@ public class FileServiceImpl implements FileService {
 
     }
 
+    @SuppressWarnings("java:S1192")
     @Override
     public Flux<FileDocument> getAllMetadataByUserLogin(String login) {
         Aggregation aggregation = Aggregation.newAggregation(
@@ -154,10 +156,16 @@ public class FileServiceImpl implements FileService {
                                 return state;
                             } else {
                                 try {
-                                    sink.next(CustomDataBufferUtils.join(
-                                            s3FileRepository.asyncGetFileBytesByRange(s3File.getS3FileLocation(),
-                                                    currIndex, asyncLoadChunkSize)
-                                    ).toFuture().get());
+                                    sink.next(
+                                            DataBufferUtils.join(
+                                                            s3FileRepository.asyncGetFileBytesByRange(s3File.getS3FileLocation(),
+                                                                    currIndex, asyncLoadChunkSize)
+                                                    )
+                                                    .toFuture()
+                                                    .get());
+                                } catch (InterruptedException e) {
+                                    Thread.currentThread().interrupt();
+                                    throw new BaseReactiveVideoException("При загрузке файла произошла ошибка: ", e);
                                 } catch (Exception e) {
                                     throw new BaseReactiveVideoException("При загрузке файла произошла ошибка: ", e);
                                 }
