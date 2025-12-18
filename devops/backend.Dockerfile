@@ -5,7 +5,7 @@ COPY . .
 RUN ["mvn", "clean", "package", "dependency:copy-dependencies", "-Dmaven.test.skip", "-DincludeScope=runtime"]
 
 FROM bellsoft/liberica-openjdk-debian:17
-WORKDIR opt/app
+WORKDIR /opt/app
 
 COPY --from=builder /opt/app/target/reactive-video-1.0.jar .
 COPY --from=builder /opt/app/target/classes/application.yml application.yml

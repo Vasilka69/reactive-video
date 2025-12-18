@@ -31,8 +31,5 @@ vk:
       refresh-token: "voice-oauth-refresh-token"
     endpoint: "https://voice.mcs.mail.ru/tts"
 
-file:
-  async-load-chunk-size: "#{1024 * 1024}"
-
 server:
   port: 8081

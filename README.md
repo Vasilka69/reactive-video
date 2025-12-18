@@ -12,10 +12,37 @@
 Для развертывания приложения в контейнерах были написаны Dockerfile и docker-compose.yaml. 
 Также были написаны манифесты развёртывания сервиса для Kubernetes. Devops конфиги расположены в директории /devops.
 
-### Сборка запуск только контейнера с сервисом:
+### Сборка backend и frontend:
 ```
-docker build -f ./devops/app.Dockerfile -t reactive-video:1.0 .
-docker run --name reactive-video -p 8081:8081 -e MONGODB_URI=mongodb://host.docker.internal:27017/files -e S3_HOST=http://host.docker.internal:9000 -e S3_ACCESS_KEY=<S3_ACCESS_KEY> -e S3_SECRET_KEY=<S3_SECRET_KEY> -e FILE_ASYNC_LOAD_CHUNK_SIZE="#{1024 * 1024}" reactive-video:1.0
+docker build -f ./devops/backend.Dockerfile -t reactive-video:1.0 .
+docker build -f ./devops/frontend.Dockerfile -t reactive-video-frontend:1.0 .
+```
+
+### Запуск контейнеров backend и frontend:
+```
+docker network create reactive-video-network
+
+docker run \
+--name reactive-video-backend \
+-p 8081:8081 \
+-e MONGODB_URI=mongodb://host.docker.internal:27017/files \
+-e S3_HOST=http://host.docker.internal:9000 \
+-e S3_ACCESS_KEY=S3_ACCESS_KEY \
+-e S3_SECRET_KEY=S3_SECRET_KEY \
+-e VK_VISION_OAUTH_CLIENT_ID=VK_VISION_OAUTH_CLIENT_ID \
+-e VK_VISION_OAUTH_REFRESH_TOKEN=VK_VISION_OAUTH_REFRESH_TOKEN \
+-e VK_VOICE_OAUTH_CLIENT_ID=VK_VOICE_OAUTH_CLIENT_ID \
+-e VK_VOICE_OAUTH_REFRESH_TOKEN=VK_VOICE_OAUTH_REFRESH_TOKEN \
+--env-file ./devops/backend.env \
+--network reactive-video-network \
+reactive-video:1.0
+
+docker run \
+--name reactive-video-frontend \
+-p 8080:80 \
+-e BACKEND_HOST=reactive-video-backend:8081 \
+--network reactive-video-network \
+reactive-video-frontend:1.0
 ```
 
 ### Запуск сервиса и его инфраструктуры в docker compose:

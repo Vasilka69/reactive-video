@@ -35,7 +35,7 @@ vk:
     endpoint: ${VK_VOICE_ENDPOINT}
 
 file:
-  async-load-chunk-size: ${FILE_ASYNC_LOAD_CHUNK_SIZE}
+  async-load-chunk-size: ${FILE_ASYNC_LOAD_CHUNK_SIZE:#{1024 * 1024}}
 
 server:
   port: ${SERVER_PORT}
