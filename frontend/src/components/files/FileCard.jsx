@@ -10,6 +10,11 @@ import TextToSpeechModal from "./TextToSpeechModal";
 
 export default function FileCard({ file, onDelete }) {
     const { blobUrl, loading } = useFileBlob(file.fileId);
+    const isImage = file.type === "image";
+    const isGif = file.type === "gif";
+    const isVideo = file.type === "video";
+    const isText = file.type === "text";
+    const canPreview = isImage || isGif || isVideo;
     const [modalVisible, setModalVisible] = useState(false);
     const [previewVisible, setPreviewVisible] = useState(false);
     const [recognitionResult, setRecognitionResult] = useState(null);
@@ -19,6 +24,7 @@ export default function FileCard({ file, onDelete }) {
     const [ttsAudioUrl, setTtsAudioUrl] = useState(null);
     const [ttsLoading, setTtsLoading] = useState(false);
     const [recognitionLoading, setRecognitionLoading] = useState(false);
+    const messageKeys = { recog: "recog", tts: "tts" };
 
     useEffect(() => {
         return () => {
@@ -31,11 +37,11 @@ export default function FileCard({ file, onDelete }) {
     const handleMarkImage = async () => {
         try {
             setRecognitionLoading(true);
-            message.loading({ content: "Распознавание...", key: "recog" });
+            message.loading({ content: "Распознавание...", key: messageKeys.recog });
             const result = await recognizeImage(file.fileId);
             message.success({
                 content: "Распознавание завершено",
-                key: "recog",
+                key: messageKeys.recog,
                 duration: 2,
             });
             setRecognitionResult(result);
@@ -46,7 +52,7 @@ export default function FileCard({ file, onDelete }) {
                 content:
                     "Ошибка распознавания: " +
                     (e?.response?.data?.message || "Неизвестная ошибка"),
-                key: "recog",
+                key: messageKeys.recog,
             });
         } finally {
             setRecognitionLoading(false);
@@ -58,12 +64,12 @@ export default function FileCard({ file, onDelete }) {
             setRecognitionLoading(true);
             message.loading({
                 content: "Получение кэшированной разметки...",
-                key: "recog",
+                key: messageKeys.recog,
             });
             const result = await cachedRecognizeImage(file.fileId);
             message.success({
                 content: "Кэшированная разметка получена",
-                key: "recog",
+                key: messageKeys.recog,
                 duration: 2,
             });
             setRecognitionResult(result);
@@ -74,7 +80,7 @@ export default function FileCard({ file, onDelete }) {
                 content:
                     "Ошибка загрузки кэшированной разметки: " +
                     (e?.response?.data?.message || "Неизвестная ошибка"),
-                key: "recog",
+                key: messageKeys.recog,
             });
         } finally {
             setRecognitionLoading(false);
@@ -107,7 +113,6 @@ export default function FileCard({ file, onDelete }) {
     };
 
     const handleTextToSpeech = async (useCache = false) => {
-        const key = "tts";
         try {
             setTextModalVisible(true);
             setTtsLoading(true);
@@ -115,7 +120,7 @@ export default function FileCard({ file, onDelete }) {
                 content: useCache
                     ? "Получаем озвучку из кеша..."
                     : "Готовим озвучку текста...",
-                key,
+                key: messageKeys.tts,
             });
             const audioBlob = useCache
                 ? await cachedTextToSpeech(file.fileId)
@@ -129,7 +134,7 @@ export default function FileCard({ file, onDelete }) {
                 content: useCache
                     ? "Озвучка получена из кеша"
                     : "Озвучка готова",
-                key,
+                key: messageKeys.tts,
                 duration: 2,
             });
         } catch (e) {
@@ -138,7 +143,7 @@ export default function FileCard({ file, onDelete }) {
                 content:
                     "Не удалось озвучить текст: " +
                     (e?.response?.data?.message || "произошла ошибка"),
-                key,
+                key: messageKeys.tts,
             });
         } finally {
             setTtsLoading(false);
@@ -158,6 +163,7 @@ export default function FileCard({ file, onDelete }) {
         if (loading) return <Spin />;
         switch (file.type) {
             case "image":
+            case "gif":
                 return (
                     <img
                         src={blobUrl}
@@ -172,14 +178,6 @@ export default function FileCard({ file, onDelete }) {
                         height="80"
                         style={{ borderRadius: 8 }}
                         muted
-                    />
-                );
-            case "gif":
-                return (
-                    <img
-                        src={blobUrl}
-                        alt={file.filePath}
-                        style={{ width: 120, borderRadius: 8 }}
                     />
                 );
             case "text":
@@ -234,7 +232,7 @@ export default function FileCard({ file, onDelete }) {
                 </div>
 
                 <Space style={{ marginTop: 16 }}>
-                    {file.type === "image" && (
+                    {isImage && (
                         <>
                             <Button
                                 type="primary"
@@ -259,7 +257,7 @@ export default function FileCard({ file, onDelete }) {
                         </>
                     )}
 
-                    {file.type === "text" && (
+                    {isText && (
                         <Button
                             type="primary"
                             loading={textLoading}
@@ -297,15 +295,14 @@ export default function FileCard({ file, onDelete }) {
             </Card>
 
             <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                {(file.type === "image" || file.type === "video") &&
-                    previewVisible && (
-                        <FilePreviewModal
-                            open={previewVisible}
-                            onClose={() => setPreviewVisible(false)}
-                            file={file}
-                            blobUrl={blobUrl}
-                        />
-                    )}
+                {canPreview && previewVisible && (
+                    <FilePreviewModal
+                        open={previewVisible}
+                        onClose={() => setPreviewVisible(false)}
+                        file={file}
+                        blobUrl={blobUrl}
+                    />
+                )}
             </div>
 
             <div style={{ display: "flex", gap: 16, alignItems: "center" }}>

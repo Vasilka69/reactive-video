@@ -9,7 +9,7 @@ export default function FilePreviewModal({ open, onClose, file, blobUrl }) {
             open={open}
             onCancel={onClose}
             footer={null}
-            width={850}
+            width={900}
             style={{
                 top: 20,
                 textAlign: "center",
@@ -17,18 +17,22 @@ export default function FilePreviewModal({ open, onClose, file, blobUrl }) {
         >
             <div
                 style={{
-                    paddingTop: 30,
+                    paddingTop: 12,
+                    display: "flex",
+                    justifyContent: "center",
                 }}
             >
-                {file.type === "image" && (
+                {(file.type === "image" || file.type === "gif") && (
                     <img
                         src={blobUrl}
                         alt={file.filePath}
                         style={{
-                            width: "100%",
+                            maxWidth: "100%",
+                            maxHeight: "80vh",
                             height: "auto",
+                            width: "auto",
                             display: "block",
-                            margin: 0,
+                            objectFit: "contain",
                         }}
                     />
                 )}
@@ -38,7 +42,7 @@ export default function FilePreviewModal({ open, onClose, file, blobUrl }) {
                         controls
                         style={{
                             width: "100%",
-                            maxHeight: "90vh",
+                            maxHeight: "80vh",
                             display: "block",
                         }}
                     />

@@ -6,9 +6,16 @@ const { Header, Content } = Layout;
 
 export default function AppLayout({ children }) {
     return (
-        <Layout style={{ height: "100vh" }}>
+        <Layout style={{ minHeight: "100vh" }}>
             <HeaderBar />
-            <Content style={{ padding: 20, overflowY: "auto" }}>
+            <Content
+                style={{
+                    padding: 20,
+                    maxWidth: 1200,
+                    margin: "0 auto",
+                    width: "100%",
+                }}
+            >
                 {children}
             </Content>
         </Layout>
