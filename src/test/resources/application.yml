@@ -4,16 +4,5 @@ spring:
     description: "@project.description@"
     version: "@project.version@"
 
-vk:
-  oauth:
-    endpoint: "https://mcs.mail.ru/auth/oauth/v1/token"
-    client-id: "client-id"
-    refresh-token: "refresh-token"
-    provider: "mcs"
-  vision:
-    host: "https://smarty.mail.ru"
-    endpoint:
-      detect: "/api/v1/objects/detect"
-
 server:
   port: 8081

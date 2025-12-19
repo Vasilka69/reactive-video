@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +24,7 @@ import jakarta.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.Map;
 
+@Lazy
 @Slf4j
 @RequiredArgsConstructor
 @Service

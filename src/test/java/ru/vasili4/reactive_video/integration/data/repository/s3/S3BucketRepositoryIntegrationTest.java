@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import(TestConfig.class)
 @SpringBootTest
 @DisplayName("Интеграционные тесты S3 Bucket репозитория")
-public class S3BucketRepositoryIntegrationTest {
+class S3BucketRepositoryIntegrationTest {
 
     @Autowired
     private S3BucketRepository s3BucketRepository;

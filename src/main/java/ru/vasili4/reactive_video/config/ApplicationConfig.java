@@ -12,7 +12,7 @@ import ru.vasili4.reactive_video.client.impl.WebClientWrapperImpl;
 @Import({MiniOConfig.class, SecurityConfig.class, SwaggerConfig.class})
 public class ApplicationConfig {
 
-    @Value("${vk.vision.host}")
+    @Value("${vk.vision.host:}")
     private String vkVisionHost;
 
     @Bean

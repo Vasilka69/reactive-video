@@ -6,15 +6,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import reactor.test.StepVerifier;
+import ru.vasili4.reactive_video.config.TestConfig;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.UserDocument;
 import ru.vasili4.reactive_video.data.repository.reactive.UserReactiveRepository;
 
 import java.util.List;
 
+@Import(TestConfig.class)
 @SpringBootTest
 @DisplayName("Интеграционные тесты репозитория пользователей")
-public class FileReactiveRepositoryIntegrationTest {
+class FileReactiveRepositoryIntegrationTest {
 
     @Autowired
     private UserReactiveRepository userReactiveRepository;

@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpEntity;
@@ -32,7 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//@Lazy  // todo ))
+@Lazy
 @Slf4j
 @Service
 public class VkVisionClientImpl implements VkVisionClient {
@@ -70,7 +71,11 @@ public class VkVisionClientImpl implements VkVisionClient {
     private String detectMetadataTemplate;
     private String labelsJsonPath;
 
-    public VkVisionClientImpl(ObjectMapper objectMapper, VkOauthClient vkOauthClient, @Qualifier("vkVisionWebClientWrapperImpl") WebClientWrapper webClientWrapper) {
+    public VkVisionClientImpl(
+            ObjectMapper objectMapper,
+            VkOauthClient vkOauthClient,
+            @Qualifier("vkVisionWebClientWrapperImpl") WebClientWrapper webClientWrapper
+    ) {
         this.objectMapper = objectMapper;
         this.vkOauthClient = vkOauthClient;
         this.webClientWrapper = webClientWrapper;

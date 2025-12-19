@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import(TestConfig.class)
 @SpringBootTest
 @DisplayName("Интеграционные тесты S3 файлового репозитория")
-public class S3FileRepositoryIntegrationTest {
+class S3FileRepositoryIntegrationTest {
 
     @Autowired
     private S3FileRepository s3FileRepository;
