@@ -20,6 +20,9 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8081
+          envFrom:
+            - configMapRef:
+                name: reactive-video-backend-envs
           env:
             - name: MONGODB_URI
               value: mongodb://reactive-video-mongo-service:27017/files
@@ -35,11 +38,6 @@ spec:
                 secretKeyRef:
                   name: reactive-video-secret
                   key: MINIO_SECRET_KEY
-            - name: FILE_ASYNC_LOAD_CHUNK_SIZE
-              valueFrom:
-                configMapKeyRef:
-                  name: reactive-video-envs
-                  key: FILE_ASYNC_LOAD_CHUNK_SIZE
 ---
 apiVersion: apps/v1
 kind: Deployment
