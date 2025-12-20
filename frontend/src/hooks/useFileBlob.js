@@ -11,7 +11,7 @@ export const useFileBlob = (fileId) => {
             try {
                 const token = localStorage.getItem("token");
                 const res = await axios.get(
-                    `/api/v1/reactive/file/sync/${fileId}`,
+                    `/api/v1/reactive/file/async/${fileId}`,
                     {
                         headers: { Authorization: token },
                         responseType: "blob",
