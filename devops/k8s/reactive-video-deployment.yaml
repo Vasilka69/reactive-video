@@ -42,6 +42,32 @@ spec:
                   key: FILE_ASYNC_LOAD_CHUNK_SIZE
 ---
 apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reactive-video-frontend-deployment
+  labels:
+    app: reactive-video-frontend
+spec:
+  selector:
+    matchLabels:
+      app: reactive-video-frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: reactive-video-frontend
+    spec:
+      containers:
+        - name: reactive-video-frontend
+          image: reactive-video-frontend:1.0
+          imagePullPolicy: Never
+          env:
+            - name: BACKEND_HOST
+              value: reactive-video-app-service:8081
+          ports:
+            - containerPort: 80
+---
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: reactive-video-mongo-set
@@ -95,7 +121,7 @@ spec:
     spec:
       containers:
         - name: reactive-video-minio-container
-          image: quay.io/minio/minio
+          image: minio/minio
           args:
             - server
             - /data
@@ -167,3 +193,16 @@ spec:
   ports:
     - port: 8081
       targetPort: 8081
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reactive-video-frontend-service
+spec:
+  type: NodePort
+  selector:
+    app: reactive-video-frontend
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 8080

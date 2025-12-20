@@ -1,6 +1,12 @@
 package ru.vasili4.reactive_video.data.repository.s3.impl;
 
-import io.minio.*;
+import io.minio.GetObjectArgs;
+import io.minio.MinioAsyncClient;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
+import io.minio.StatObjectArgs;
+import io.minio.StatObjectResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.compress.utils.IOUtils;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -28,43 +34,6 @@ public class MinioS3FileRepository implements S3FileRepository {
 
     private final MinioClient minioClient;
     private final MinioAsyncClient minioAsyncClient;
-
-    @Override
-    public void createBucket(String bucketName) {
-        try {
-            minioClient.makeBucket(
-                    MakeBucketArgs.builder()
-                            .bucket(bucketName)
-                            .build()
-            );
-        } catch (Exception e) {
-            throw S3Exception.withDefaultMessageTemplate(e.getMessage());
-        }
-    }
-
-    @Override
-    public void deleteBucket(String bucketName) {
-        try {
-            minioClient.removeBucket(
-                    RemoveBucketArgs.builder()
-                            .bucket(bucketName)
-                            .build()
-            );
-        } catch (Exception e) {
-            throw S3Exception.withDefaultMessageTemplate(e.getMessage());
-        }
-    }
-
-    @Override
-    public boolean isBucketExists(String bucketName) {
-        try {
-            return minioClient.bucketExists(BucketExistsArgs.builder()
-                    .bucket(bucketName)
-                    .build());
-        } catch (Exception e) {
-            throw new S3Exception(String.format("Ошибка при проверке наличия bucket \"%s\" в S3 хранилище: %s", bucketName, e.getMessage()));
-        }
-    }
 
     @Override
     public boolean isFileExists(S3FileLocation location) {

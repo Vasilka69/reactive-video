@@ -1,7 +1,11 @@
 package ru.vasili4.reactive_video.utils;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.util.stream.IntStream;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ByteArrayUtils {
 
     public static Byte[] primitiveArrayToObjectArray(byte[] bytes) {
@@ -19,8 +23,6 @@ public class ByteArrayUtils {
     }
 
     public static boolean isRangeFinished(Long offset, Long length, Long totalSize) {
-        if (offset >= totalSize || length == 0)
-            return true;
-        return false;
+        return offset >= totalSize || length == 0;
     }
 }

@@ -18,7 +18,10 @@ public class DefaultPermissionEvaluator implements PermissionEvaluator {
         else
             throw new UserNotFoundException("Ошибка получения пользователя");
 
-        return user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList().contains(fileId.toString());
+        return user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList()
+                .contains(fileId.toString());
     }
 
     @Override

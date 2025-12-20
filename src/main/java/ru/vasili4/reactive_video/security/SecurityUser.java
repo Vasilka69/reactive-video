@@ -13,6 +13,7 @@ import java.util.Collection;
 public class SecurityUser extends User {
 
     private UserDocument user;
+
     public SecurityUser(UserDocument user, String username, String password, Collection<? extends SimpleGrantedAuthority> authorities) {
         super(username, password, authorities);
         this.user = user;

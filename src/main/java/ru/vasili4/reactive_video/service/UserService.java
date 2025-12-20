@@ -7,4 +7,5 @@ import ru.vasili4.reactive_video.web.dto.request.UserRequestDto;
 public interface UserService {
     Mono<String> register(UserRequestDto user);
     Mono<UserDocument> findByLogin(String login);
+    Mono<UserDocument> getUserByToken();
 }

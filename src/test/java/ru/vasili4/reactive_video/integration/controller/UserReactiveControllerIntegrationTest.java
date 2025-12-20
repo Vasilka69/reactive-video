@@ -17,7 +17,7 @@ import ru.vasili4.reactive_video.exception.EntityValidationException;
 import ru.vasili4.reactive_video.exception.UserAlreadyExistsException;
 import ru.vasili4.reactive_video.web.dto.request.UserRequestDto;
 
-import static ru.vasili4.reactive_video.exception.ExceptionController.createErrorResponseDto;
+import static ru.vasili4.reactive_video.web.ExceptionController.createErrorResponseDto;
 
 @Import(TestConfig.class)
 @SpringBootTest

@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class S3File {
     private S3FileLocation s3FileLocation;
-    private S3FileInfo fileInfo = null;
-    private byte[] content = null;
+    private S3FileInfo fileInfo;
+    private byte[] content;
 
     public S3File(S3FileLocation s3FileLocation) {
         this.s3FileLocation = s3FileLocation;

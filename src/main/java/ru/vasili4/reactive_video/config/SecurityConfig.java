@@ -35,13 +35,14 @@ public class SecurityConfig {
                                                       ReactiveAuthenticationManager authenticationManager,
                                                       JwtAuthenticationManager jwtAuthenticationManager) {
         http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .cors(ServerHttpSecurity.CorsSpec::disable)
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)
                 .httpBasic(Customizer.withDefaults())
                 .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec
                         .pathMatchers(getSwaggerPatterns()).permitAll()
-                        .pathMatchers(HttpMethod.POST, "/api/v1/reactive/user/register").permitAll()
+                        .pathMatchers("/api/v1/reactive/user/register").permitAll()
+                        .pathMatchers("/api/v1/reactive/user/login").permitAll()
                         .anyExchange().authenticated())
                 .addFilterAt(new JWTLoginFilter(HttpMethod.POST, "/api/v1/reactive/user/login", authenticationManager, serverCodecConfigurer), SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAt(new AuthenticationFilter(jwtAuthenticationManager), SecurityWebFiltersOrder.AUTHENTICATION);

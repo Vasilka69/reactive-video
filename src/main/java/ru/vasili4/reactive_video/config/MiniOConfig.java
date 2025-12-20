@@ -10,17 +10,17 @@ public class MiniOConfig {
     @Value("${s3.host:http://127.0.0.1:9000}")
     private String host;
 
-    @Value("${s3.access_key:access_key}")
-    private String access_key;
+    @Value("${s3.access-key:access-key}")
+    private String accessKey;
 
-    @Value("${s3.secret_key:secret_key}")
-    private String secret_key;
+    @Value("${s3.secret-key:secret-key}")
+    private String secretKey;
 
     @Bean
     public MinioClient getMinioClient() {
         return MinioClient.builder()
                 .endpoint(host)
-                .credentials(access_key, secret_key)
+                .credentials(accessKey, secretKey)
                 .build();
     }
 
@@ -28,7 +28,7 @@ public class MiniOConfig {
     public MinioAsyncClient getMinioAsyncClient() {
         return MinioAsyncClient.builder()
                 .endpoint(host)
-                .credentials(access_key, secret_key)
+                .credentials(accessKey, secretKey)
                 .build();
     }
 }

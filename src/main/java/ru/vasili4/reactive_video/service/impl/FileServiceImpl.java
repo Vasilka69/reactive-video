@@ -5,7 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +20,10 @@ import ru.vasili4.reactive_video.data.model.reactive.mongo.FileDocument;
 import ru.vasili4.reactive_video.data.model.reactive.mongo.UserHasFileDocument;
 import ru.vasili4.reactive_video.data.model.s3.S3File;
 import ru.vasili4.reactive_video.data.model.s3.S3FileLocation;
+import ru.vasili4.reactive_video.data.repository.reactive.CachedImageRecognitionReactiveRepository;
 import ru.vasili4.reactive_video.data.repository.reactive.FileReactiveRepository;
 import ru.vasili4.reactive_video.data.repository.reactive.UserHasFileReactiveRepository;
+import ru.vasili4.reactive_video.data.repository.s3.S3BucketRepository;
 import ru.vasili4.reactive_video.data.repository.s3.S3FileRepository;
 import ru.vasili4.reactive_video.exception.BaseReactiveVideoException;
 import ru.vasili4.reactive_video.service.FileService;
@@ -37,10 +44,12 @@ public class FileServiceImpl implements FileService {
     @Value("${file.async-load-chunk-size:#{1024 * 1024}}")
     private long asyncLoadChunkSize;
 
+    private final ReactiveMongoTemplate reactiveMongoTemplate;
     private final FileReactiveRepository fileReactiveRepository;
     private final S3FileRepository s3FileRepository;
-
+    private final S3BucketRepository s3BucketRepository;
     private final UserHasFileReactiveRepository userHasFileReactiveRepository;
+    private final CachedImageRecognitionReactiveRepository cachedImageRecognitionReactiveRepository;
 
     private final FileValidator fileValidator;
 
@@ -60,22 +69,24 @@ public class FileServiceImpl implements FileService {
     @Transactional
     public Mono<String> create(FileDocument file, Mono<FilePart> filePartMono, String login) {
         return fileValidator.validateBeforeCreate(file)
-                .then(fileReactiveRepository.save(file)
-                        .flatMap(fileEntity -> {
-                                    if (!s3FileRepository.isBucketExists(fileEntity.getBucket()))
-                                        s3FileRepository.createBucket(fileEntity.getBucket());
-                                    return filePartMono.flatMap(filePart ->
-                                            CustomDataBufferUtils.join(filePart.content())
+                .thenReturn(file)
+                .flatMap((FileDocument fileDocument) -> {
+                            if (!s3BucketRepository.isBucketExists(file.getBucket()))
+                                s3BucketRepository.createBucket(file.getBucket());
+                            return filePartMono
+                                    .flatMap(filePart ->
+                                            DataBufferUtils.join(filePart.content())
                                                     .map(dataBuffer -> {
                                                         s3FileRepository.uploadFile(new S3File(
-                                                                new S3FileLocation(fileEntity),
+                                                                new S3FileLocation(file),
                                                                 CustomDataBufferUtils.readAllBytesArray(dataBuffer)
                                                         ));
-                                                        return fileEntity;
+                                                        return file;
                                                     })
                                     );
-                                }
-                        )
+                        }
+                )
+                .then(fileReactiveRepository.save(file)
                         .flatMap(fileEntity -> userHasFileReactiveRepository.save(
                                         new UserHasFileDocument(
                                                 new UserHasFileDocument.UserHasFileDocumentId(
@@ -94,7 +105,7 @@ public class FileServiceImpl implements FileService {
                 .then(getFileMetadataById(id)
                         .flatMap(fileEntity ->
                                 filePartMono.flatMap(filePart ->
-                                        CustomDataBufferUtils.join(filePart.content())
+                                        DataBufferUtils.join(filePart.content())
                                                 .map(dataBuffer -> {
                                                     s3FileRepository.uploadFile(new S3File(
                                                             new S3FileLocation(fileEntity),
@@ -114,15 +125,24 @@ public class FileServiceImpl implements FileService {
                 .doOnSuccess(fileDocument -> s3FileRepository.deleteFile(new S3FileLocation(fileDocument)))
                 .doOnSuccess(fileDocument -> fileReactiveRepository.deleteById(id).subscribe())
                 .doOnSuccess(fileDocument -> userHasFileReactiveRepository.deleteByIdFileId(id).subscribe())
+                .doOnSuccess(fileDocument -> cachedImageRecognitionReactiveRepository.deleteById(id).subscribe())
                 .doOnSuccess(fileDocument -> log.info("Файл с ID = {} был успешно удален", id))
                 .then();
 
     }
 
+    @SuppressWarnings("java:S1192")
     @Override
     public Flux<FileDocument> getAllMetadataByUserLogin(String login) {
-        return userHasFileReactiveRepository.findByIdLogin(login)
-                .flatMap(userHasFileDocument -> getFileMetadataById(userHasFileDocument.getId().getFileId()));
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(Criteria.where("_id.login").is(login)),
+                Aggregation.lookup("file", "_id.fileId", "_id", "fileData"),
+                Aggregation.unwind("fileData"),
+                Aggregation.sort(Sort.by(Sort.Direction.DESC, "fileData.createdAt")),
+                Aggregation.replaceRoot("fileData")
+        );
+
+        return reactiveMongoTemplate.aggregate(aggregation, "userHasFile", FileDocument.class);
     }
 
     @Override
@@ -136,10 +156,16 @@ public class FileServiceImpl implements FileService {
                                 return state;
                             } else {
                                 try {
-                                    sink.next(CustomDataBufferUtils.join(
-                                            s3FileRepository.asyncGetFileBytesByRange(s3File.getS3FileLocation(),
-                                                    currIndex, asyncLoadChunkSize)
-                                    ).toFuture().get());
+                                    sink.next(
+                                            DataBufferUtils.join(
+                                                            s3FileRepository.asyncGetFileBytesByRange(s3File.getS3FileLocation(),
+                                                                    currIndex, asyncLoadChunkSize)
+                                                    )
+                                                    .toFuture()
+                                                    .get());
+                                } catch (InterruptedException e) {
+                                    Thread.currentThread().interrupt();
+                                    throw new BaseReactiveVideoException("При загрузке файла произошла ошибка: ", e);
                                 } catch (Exception e) {
                                     throw new BaseReactiveVideoException("При загрузке файла произошла ошибка: ", e);
                                 }

@@ -1,10 +1,16 @@
-package ru.vasili4.reactive_video.exception;
+package ru.vasili4.reactive_video.web;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import reactor.core.publisher.Mono;
+import ru.vasili4.reactive_video.exception.BaseReactiveVideoException;
+import ru.vasili4.reactive_video.exception.EntityValidationException;
+import ru.vasili4.reactive_video.exception.ResourceIllegalArgumentException;
+import ru.vasili4.reactive_video.exception.S3Exception;
+import ru.vasili4.reactive_video.exception.UserAlreadyExistsException;
+import ru.vasili4.reactive_video.exception.UserNotFoundException;
 import ru.vasili4.reactive_video.web.dto.response.ExceptionResponseDto;
 
 @RestControllerAdvice
