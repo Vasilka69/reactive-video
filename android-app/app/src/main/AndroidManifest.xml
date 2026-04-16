@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.ReactiveVideo"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name="ru.vasili4.reactivevideo.ui.recognition.ImageRecognitionActivity"
+            android:exported="false" />
+        <activity
+            android:name="ru.vasili4.reactivevideo.ui.preview.image.ImagePreviewActivity"
+            android:exported="false" />
+        <activity
+            android:name="ru.vasili4.reactivevideo.ui.preview.text.TextFileActivity"
+            android:exported="false" />
+        <activity
+            android:name="ru.vasili4.reactivevideo.ui.preview.video.VideoPreviewActivity"
+            android:exported="false" />
+        <activity
+            android:name="ru.vasili4.reactivevideo.ui.main.MainActivity"
+            android:exported="false" />
+        <activity
+            android:name="ru.vasili4.reactivevideo.ui.auth.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name="ru.vasili4.reactivevideo.ui.entry.EntryActivity"
+            android:exported="true"
+            android:theme="@style/Theme.ReactiveVideo">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
